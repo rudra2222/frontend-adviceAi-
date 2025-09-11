@@ -4,15 +4,15 @@ function GlobalSidebar() {
 	return (
 		<div className="drawer absolute h-[calc(100dvh-5rem)]">
 			<input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-			<div className="drawer-content flex flex-col items-start justify-center">
-				{/* Page content here */}
+			{/* <div className="drawer-content flex flex-col items-start justify-center">
+				<></>
 				<label
 					htmlFor="my-drawer-2"
 					className="fixed z-50 top-5 left-7 fill-white drawer-button"
 				>
 					<PanelLeftClose />
 				</label>
-			</div>
+			</div> */}
 
 			<div className="drawer-side top-14 left-0 z-10 h-[calc(100dvh-5rem)]">
 				<label
