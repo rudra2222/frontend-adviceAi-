@@ -7,7 +7,7 @@ import { Eye, EyeOff, Loader2, Lock, Phone, MessageSquare } from "lucide-react";
 const LoginPage = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [formData, setFormData] = useState({
-		email: "",
+		phone: "",
 		password: "",
 	});
 	const { login, isLoggingIn } = useAuthStore();
@@ -25,10 +25,7 @@ const LoginPage = () => {
 					{/* Logo */}
 					<div className="text-center mb-8">
 						<div className="flex flex-col items-center gap-2 group">
-							<div
-								className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20
-              transition-colors"
-							>
+							<div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
 								<MessageSquare className="w-6 h-6 text-primary" />
 							</div>
 							<h1 className="text-2xl font-bold mt-2">
