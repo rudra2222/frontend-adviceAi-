@@ -1,5 +1,5 @@
 import Navbar from "./components/Navbar";
-import GlobalSidebar from "./custom/GlobalSidebar";
+// import GlobalSidebar from "./custom/GlobalSidebar";
 import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
@@ -15,10 +15,8 @@ import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 
 const App = () => {
-	const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+	const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 	const { theme } = useThemeStore();
-
-	console.log({ onlineUsers });
 
 	useEffect(() => {
 		checkAuth();
@@ -36,7 +34,7 @@ const App = () => {
 	return (
 		<div className="relative" data-theme={theme}>
 			<Navbar />
-			{authUser && <GlobalSidebar />}
+			{/* {authUser && <GlobalSidebar />} */}
 			<Routes>
 				<Route
 					path="/"
