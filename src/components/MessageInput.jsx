@@ -77,8 +77,9 @@ const MessageInput = () => {
 					<input
 						type="text"
 						className="w-full input input-bordered rounded-lg input-sm sm:input-md"
-						placeholder="Type a message..."
+						placeholder="This feature is under development..."
 						value={text}
+						disabled
 						onChange={(e) => setText(e.target.value)}
 					/>
 					<input
@@ -87,6 +88,7 @@ const MessageInput = () => {
 						className="hidden"
 						ref={fileInputRef}
 						onChange={handleImageChange}
+						disabled
 					/>
 
 					<button
@@ -94,6 +96,7 @@ const MessageInput = () => {
 						className={`hidden sm:flex btn btn-circle
                         ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
 						onClick={() => fileInputRef.current?.click()}
+						disabled
 					>
 						<Image size={20} />
 					</button>
