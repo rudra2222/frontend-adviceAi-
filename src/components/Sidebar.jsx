@@ -27,6 +27,19 @@ const Sidebar = () => {
 		? criticalConversations
 		: conversations;
 
+	// Sort conversations by latest message timestamp (descending)
+	const sortedConversations = [...(conversationsToShow || [])].sort(
+		(a, b) => {
+			const aTime = a.last_message?.provider_ts
+				? new Date(a.last_message.provider_ts).getTime()
+				: 0;
+			const bTime = b.last_message?.provider_ts
+				? new Date(b.last_message.provider_ts).getTime()
+				: 0;
+			return bTime - aTime;
+		}
+	);
+
 	if (isConversationsLoading) return <SidebarSkeleton />;
 
 	return (
@@ -61,8 +74,7 @@ const Sidebar = () => {
 			</div>
 
 			<div className="overflow-y-auto w-full py-3">
-				{conversationsToShow?.map((conversation) => {
-					console.log(conversation);
+				{sortedConversations.map((conversation) => {
 					return (
 						<button
 							key={conversation.id}
@@ -87,19 +99,14 @@ const Sidebar = () => {
 									alt={conversation.name}
 									className="size-12 object-cover rounded-full"
 								/>
-								{/* {onlineUsers.includes(conversation.id) && (
-								<span
-									className="absolute bottom-0 right-0 size-3 bg-green-500 
-                  rounded-full ring-2 ring-zinc-900"
-								/>
-							)} */}
 							</div>
-
-							{/* User info - only visible on larger screens */}
 							<div className="hidden lg:block text-left min-w-0">
 								<div className="flex justify-between">
-									<span className="font-medium truncate w-1/2">{conversation.name}</span>
-									{conversation.last_message.message_text && (
+									<span className="font-medium truncate w-1/2">
+										{conversation.name}
+									</span>
+									{conversation.last_message
+										?.message_text && (
 										<span className="text-xs text-zinc-500 ">
 											{formatMessageTime(
 												conversation.last_message
@@ -108,9 +115,9 @@ const Sidebar = () => {
 										</span>
 									)}
 								</div>
-
 								<div>
-									{conversation.last_message.message_text && (
+									{conversation.last_message
+										?.message_text && (
 										<p className="text-sm text-zinc-400 truncate w-64">
 											{
 												conversation.last_message
@@ -119,21 +126,10 @@ const Sidebar = () => {
 										</p>
 									)}
 								</div>
-								{/* <div className="text-sm text-zinc-400">
-								{onlineUsers.includes(user.id)
-									? "Online"
-									: "Offline"}
-							</div> */}
 							</div>
 						</button>
 					);
 				})}
-
-				{/* {criticalConversations.length === 0 && (
-					<div className="text-center text-zinc-500 py-4">
-						No critical conversations.
-					</div>
-				)} */}
 			</div>
 		</aside>
 	);

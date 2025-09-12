@@ -130,8 +130,12 @@ export const useChatStore = create((set, get) => ({
 						: conv
 				)
 				.sort((a, b) => {
-					const aTime = a.last_message?.provider_ts || 0;
-					const bTime = b.last_message?.provider_ts || 0;
+					const aTime = a.last_message?.provider_ts
+						? new Date(a.last_message.provider_ts).getTime()
+						: 0;
+					const bTime = b.last_message?.provider_ts
+						? new Date(b.last_message.provider_ts).getTime()
+						: 0;
 					return bTime - aTime;
 				});
 
