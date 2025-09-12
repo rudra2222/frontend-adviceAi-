@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 // import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { Users } from "lucide-react";
+import { Users, Image } from "lucide-react";
 import { formatMessageTime } from "../lib/utils";
+import profilePicColors from "../lib/profilePicColors.js";
 
 const Sidebar = () => {
 	const {
 		getInitialConversations,
-		criticalConversations,
 		conversations,
 		selectedConversation,
 		setSelectedConversation,
@@ -16,29 +16,27 @@ const Sidebar = () => {
 	} = useChatStore();
 
 	// const { onlineUsers } = useAuthStore();
-	const [showCriticalConversations, setShowCriticalConversations] =
-		useState(false);
+	// const [showCriticalConversations, setShowCriticalConversations] =
+	// 	useState(false);
 
 	useEffect(() => {
 		getInitialConversations();
 	}, []);
 
-	const conversationsToShow = showCriticalConversations
-		? criticalConversations
-		: conversations;
+	// const conversationsToShow = showCriticalConversations
+	// 	? criticalConversations
+	// 	: conversations;
 
 	// Sort conversations by latest message timestamp (descending)
-	const sortedConversations = [...(conversationsToShow || [])].sort(
-		(a, b) => {
-			const aTime = a.last_message?.provider_ts
-				? new Date(a.last_message.provider_ts).getTime()
-				: 0;
-			const bTime = b.last_message?.provider_ts
-				? new Date(b.last_message.provider_ts).getTime()
-				: 0;
-			return bTime - aTime;
-		}
-	);
+	const sortedConversations = [...(conversations || [])].sort((a, b) => {
+		const aTime = a.last_message?.provider_ts
+			? new Date(a.last_message.provider_ts).getTime()
+			: 0;
+		const bTime = b.last_message?.provider_ts
+			? new Date(b.last_message.provider_ts).getTime()
+			: 0;
+		return bTime - aTime;
+	});
 
 	if (isConversationsLoading) return <SidebarSkeleton />;
 
@@ -74,7 +72,7 @@ const Sidebar = () => {
 			</div>
 
 			<div className="overflow-y-auto w-full py-3">
-				{sortedConversations.map((conversation) => {
+				{sortedConversations?.map((conversation) => {
 					return (
 						<button
 							key={conversation.id}
@@ -82,31 +80,50 @@ const Sidebar = () => {
 								setSelectedConversation(conversation)
 							}
 							className={`
-              w-full p-3 flex items-center gap-3
-              hover:bg-green-800 transition-colors
-              ${
-					selectedConversation?.id === conversation.id
-						? "bg-stone-800 ring-1 ring-base-300"
-						: ""
-				}
+            w-full p-3 flex items-center gap-3
+            hover:bg-green-800 transition-colors
+			${
+				selectedConversation?.id === conversation.id
+					? "bg-stone-800 ring-1 ring-base-300"
+					: ""
+			}
             `}
 						>
 							<div className="relative mx-auto lg:mx-0">
-								<img
-									src={
-										conversation.profilePic || "/avatar.png"
-									}
-									alt={conversation.name}
-									className="size-12 object-cover rounded-full"
-								/>
+								{conversation.name == null && (
+									<img
+										src="/avatar.png"
+										alt="avatar"
+										className="size-12 object-cover rounded-full"
+									/>
+								)}
+								{conversation.name != null && (
+									<div
+										className={`size-12 object-cover rounded-full flex justify-center items-center ${
+											profilePicColors(conversation.name)
+										}`}
+									>
+										{conversation.name?.charAt(0) +
+											(conversation.name?.indexOf(" ") > 0
+												? conversation.name
+														?.substring(
+															conversation.name?.indexOf(
+																" "
+															) + 1
+														)
+														.charAt(0)
+												: "")}
+									</div>
+								)}
 							</div>
-							<div className="hidden lg:block text-left min-w-0">
+							<div className="hidden lg:block text-left min-w-72">
 								<div className="flex justify-between">
 									<span className="font-medium truncate w-1/2">
-										{conversation.name}
+										{conversation.name?.length > 0
+											? conversation.name
+											: "Unknown"}
 									</span>
-									{conversation.last_message
-										?.message_text && (
+									{conversation.last_message?.id && (
 										<span className="text-xs text-zinc-500 ">
 											{formatMessageTime(
 												conversation.last_message
@@ -116,13 +133,17 @@ const Sidebar = () => {
 									)}
 								</div>
 								<div>
-									{conversation.last_message
-										?.message_text && (
-										<p className="text-sm text-zinc-400 truncate w-64">
-											{
-												conversation.last_message
-													.message_text
-											}
+									{conversation.last_message?.id && (
+										<p className="flex items-center gap-1 text-sm text-zinc-400 truncate w-64">
+											{conversation.last_message
+												.media_info == null ? null : (
+												<Image className="size-4" />
+											)}
+											{conversation.last_message
+												.message_text?.length > 0
+												? conversation.last_message
+														.message_text
+												: "Media"}
 										</p>
 									)}
 								</div>

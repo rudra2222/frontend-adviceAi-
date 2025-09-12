@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import TakeoverToggleButton from "../custom/TakeoverToggleButton";
 import { useState } from "react";
+import profilePicColors from "../lib/profilePicColors.js";
 
 const ChatHeader = () => {
 	const { selectedConversation, setSelectedConversation } = useChatStore();
@@ -15,14 +16,31 @@ const ChatHeader = () => {
 				<div className="flex items-center gap-3">
 					{/* Avatar */}
 					<div className="avatar">
-						<div className="size-10 rounded-full relative">
-							<img
-								src={
-									selectedConversation.profilePic ||
-									"/avatar.png"
-								}
-								alt={selectedConversation.name}
-							/>
+						<div
+							className={`size-10 rounded-full relative ${profilePicColors(
+								selectedConversation.name
+							)}`}
+						>
+							{selectedConversation.name != null && (
+								<div className="block mt-2 text-center">
+									{selectedConversation.name != null &&
+										selectedConversation.name?.charAt(0) +
+											(selectedConversation.name?.indexOf(
+												" "
+											) > 0
+												? selectedConversation.name
+														?.substring(
+															selectedConversation.name?.indexOf(
+																" "
+															) + 1
+														)
+														.charAt(0)
+												: "")}
+								</div>
+							)}
+							{selectedConversation.name == null && (
+								<img src="/avatar.png" alt="avatar" />
+							)}
 						</div>
 					</div>
 

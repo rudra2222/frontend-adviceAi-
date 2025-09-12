@@ -6,6 +6,7 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
+import profilePicColors from "../lib/profilePicColors.js";
 
 const ChatContainer = () => {
 	const {
@@ -21,10 +22,6 @@ const ChatContainer = () => {
 
 	useEffect(() => {
 		getMessages(selectedConversation.id); // later add the lazy loading feature
-
-		subscribeToMessages();
-
-		return () => unsubscribeFromMessages();
 	}, [
 		selectedConversation.id,
 		getMessages,
@@ -64,29 +61,51 @@ const ChatContainer = () => {
 							}`}
 							ref={messageEndRef}
 						>
-							<div className=" chat-image avatar">
-								<div className="size-10 rounded-full border">
-									<img
-										src={
-											message.senderId === authUser._id
-												? authUser.profilePic ||
-												"/avatar.png"
-												: selectedUser.profilePic ||
-												"/avatar.png"
-										}
-										alt="profile pic"
-									/>
-								</div>
+							<div
+								className={`chat-image avatar size-10 rounded-full border flex justify-center items-center ${
+									message.direction === "inbound" &&
+									profilePicColors(selectedConversation.name)
+								}`}
+							>
+								{selectedConversation.name != null &&
+									message.direction === "inbound" &&
+									selectedConversation.name?.charAt(0) +
+										(selectedConversation.name?.indexOf(
+											" "
+										) > 0
+											? selectedConversation.name
+													?.substring(
+														selectedConversation.name?.indexOf(
+															" "
+														) + 1
+													)
+													.charAt(0)
+											: "")}
+
+								{(selectedConversation.name == null ||
+									message.direction === "outbound") && (
+									<img src="/avatar.png" alt="avatar" />
+								)}
 							</div>
 							<div className="chat-header mb-1">
 								<time className="text-xs opacity-50 ml-1">
 									{formatMessageTime(message.provider_ts)}
 								</time>
 							</div>
-							<div className="chat-bubble flex flex-col">
+							<div
+								className={`chat-bubble flex flex-col ${
+									message.direction === "outbound"
+										? ""
+										: "bg-zinc-800"
+								}`}
+							>
 								{message.media_info && (
 									<img
-										src={message.image}
+										src={
+											message.image
+												? message.image
+												: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvJ9_L3u5Hccsv5JCD4_x6h5jhlBpCdvu3dA&s"
+										}
 										alt="Attachment"
 										className="sm:max-w-[200px] rounded-md mb-2"
 									/>
