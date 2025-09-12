@@ -13,14 +13,21 @@ import { useEffect } from "react";
 
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
+import { useChatStore } from "./store/useChatStore.js";
 
 const App = () => {
 	const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 	const { theme } = useThemeStore();
+	const { subscribeToMessages } = useChatStore();
+	const { socket } = useAuthStore();
 
 	useEffect(() => {
 		checkAuth();
 	}, [checkAuth]);
+
+	useEffect(() => {
+		subscribeToMessages();
+	}, [socket]);
 
 	console.log({ authUser });
 

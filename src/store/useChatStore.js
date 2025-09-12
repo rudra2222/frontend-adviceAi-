@@ -6,6 +6,7 @@ import { useAuthStore } from "./useAuthStore";
 export const useChatStore = create((set, get) => ({
 	messages: [],
 	criticalConversations: [],
+	conversations: [],
 	selectedConversation: null,
 	isConversationsLoading: false,
 	isMessagesLoading: false,
@@ -33,7 +34,7 @@ export const useChatStore = create((set, get) => ({
 		set({ isConversationsLoading: true });
 		try {
 			const res = await axiosInstance.get(
-				`/messages/conversations?offset=${lastConversationId}&limit=100`
+				`/conversations?offset=${lastConversationId}&limit=100`
 			);
 			console.log(res.data);
 			set({
@@ -53,27 +54,28 @@ export const useChatStore = create((set, get) => ({
 		set({ isConversationsLoading: true });
 		try {
 			const res = await axiosInstance.get(
-				`/messages/conversations/${conversationId}`
+				`/conversations/${conversationId}/`
 			);
 			console.log(res.data);
 			res.data.conversation.human_intervention_required
 				? set({
 						criticalConversations: [
 							...get().criticalConversations,
-							...res.data.conversation,
+							res.data.conversation,
 						],
 						conversations: [
 							...get().conversations,
-							...res.data.conversation,
+							res.data.conversation,
 						],
 				  })
 				: set({
 						conversations: [
 							...get().conversations,
-							...res.data.conversation,
+							res.data.conversation,
 						],
 				  });
 		} catch (error) {
+			console.log(error);
 			toast.error(error.response.data.message);
 		} finally {
 			set({ isConversationsLoading: false });
@@ -106,47 +108,53 @@ export const useChatStore = create((set, get) => ({
 	},
 
 	subscribeToMessages: () => {
-		const { selectedConversation } = get();
-		if (!selectedConversation) return;
-
 		const socket = useAuthStore.getState().socket;
 
-		socket.on("newMessage", (newMessage) => {
-			const isMessageSentFromSelectedConversation =
-				newMessage.conversation_id === selectedConversation.id;
-			if (!isMessageSentFromSelectedConversation) return;
-
+		socket?.on("newMessage", async (newMessage) => {
 			console.log("New message received", newMessage);
+
+			let isContains = false;
+			get().conversations?.map((conv) => {
+				if (conv.id === newMessage.conversation_id) {
+					isContains = true;
+					return;
+				}
+			});
+
+			if (!isContains) {
+				get().getConversation(newMessage.conversation_id);
+			}
+
 			set({
 				messages: [...get().messages, newMessage],
 			});
 
 			// Move the conversation to the top and update last_message
 			const conversations = get().conversations || [];
-			const updatedConversations = conversations
-				.map((conv) =>
-					conv.id === newMessage.conversation_id
-						? { ...conv, last_message: newMessage }
-						: conv
-				)
-				.sort((a, b) => {
-					const aTime = a.last_message?.provider_ts
-						? new Date(a.last_message.provider_ts).getTime()
-						: 0;
-					const bTime = b.last_message?.provider_ts
-						? new Date(b.last_message.provider_ts).getTime()
-						: 0;
-					return bTime - aTime;
-				});
+			const updatedConversations = conversations.map((conv) =>
+				conv.id === newMessage.conversation_id
+					? {
+							...conv,
+							last_message: {
+								id: newMessage.id,
+								direction: newMessage.direction,
+								sender_id: newMessage.sender_id,
+								message_text: newMessage.message_text,
+								media_info: newMessage.media_info,
+								provider_ts: newMessage.provider_ts,
+							},
+					  }
+					: conv
+			);
 
 			set({ conversations: updatedConversations });
 		});
 	},
 
-	unsubscribeFromMessages: () => {
-		const socket = useAuthStore.getState().socket;
-		socket.off("newMessage");
-	},
+	// unsubscribeFromMessages: () => {
+	// 	const socket = useAuthStore.getState().socket;
+	// 	socket.off("newMessage");
+	// },
 
 	setSelectedConversation: (selectedConversation) =>
 		set({ selectedConversation }),
