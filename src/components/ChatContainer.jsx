@@ -99,17 +99,63 @@ const ChatContainer = () => {
 										: "bg-zinc-800"
 								}`}
 							>
-								{message.media_info && (
-									<img
-										src={
-											message.image
-												? message.image
-												: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSvJ9_L3u5Hccsv5JCD4_x6h5jhlBpCdvu3dA&s"
-										}
-										alt="Attachment"
-										className="sm:max-w-[200px] rounded-md mb-2"
-									/>
-								)}
+								{message.media_info &&
+									message.media_info.mime_type.substring(
+										0,
+										message.media_info.mime_type.indexOf(
+											"/"
+										)
+									) !== "video" && (
+										<img
+											src={`http://localhost:2025/api/v1/get-media?id=${
+												message.media_info.id
+											}&type=${
+												message.media_info.mime_type?.substring(
+													0,
+													message.media_info.mime_type?.indexOf(
+														"/"
+													)
+												) +
+												"%2F" +
+												message.media_info.mime_type?.substring(
+													message.media_info.mime_type?.indexOf(
+														"/"
+													) + 1
+												)
+											}`}
+											alt={message.media_info.description}
+											className="sm:max-w-[200px] rounded-md mb-2"
+										/>
+									)}
+								{message.media_info &&
+									message.media_info.mime_type.substring(
+										0,
+										message.media_info.mime_type.indexOf(
+											"/"
+										)
+									) === "video" && (
+										<video
+											src={`http://localhost:2025/api/v1/get-media?id=${
+												message.media_info.id
+											}&type=${
+												message.media_info.mime_type?.substring(
+													0,
+													message.media_info.mime_type?.indexOf(
+														"/"
+													)
+												) +
+												"%2F" +
+												message.media_info.mime_type?.substring(
+													message.media_info.mime_type?.indexOf(
+														"/"
+													) + 1
+												)
+											}`}
+											alt={message.media_info.description}
+											className="sm:max-w-[200px] rounded-md mb-2"
+											controls
+										/>
+									)}
 								{message.has_text && (
 									<p>{message.message_text}</p>
 								)}
