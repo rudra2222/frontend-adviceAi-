@@ -107,7 +107,7 @@ const ChatContainer = () => {
 										)
 									) !== "video" && (
 										<img
-											src={`http://localhost:2025/api/v1/get-media?id=${
+											src={`https://adviseai-backend.onrender.com/api/v1/get-media?id=${
 												message.media_info.id
 											}&type=${
 												message.media_info.mime_type?.substring(
@@ -135,7 +135,7 @@ const ChatContainer = () => {
 										)
 									) === "video" && (
 										<video
-											src={`http://localhost:2025/api/v1/get-media?id=${
+											src={`https://adviseai-backend.onrender.com/api/v1/get-media?id=${
 												message.media_info.id
 											}&type=${
 												message.media_info.mime_type?.substring(
