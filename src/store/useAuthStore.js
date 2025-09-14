@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 const BASE_URL =
 	import.meta.env.MODE === "development"
 		? "http://localhost:2025"
-		: import.meta.env.BACKEND_URL;
+		: `${import.meta.env.BACKEND_URL}:${PORT}`;
 
 export const useAuthStore = create((set, get) => ({
 	authUser: null,
@@ -88,7 +88,9 @@ export const useAuthStore = create((set, get) => ({
 		const { authUser } = get();
 		if (!authUser || get().socket?.connected) return;
 
-		const socket = io(BASE_URL);
+		const socket = io(BASE_URL, {
+			transports: ["websocket"],
+		});
 		socket.connect();
 
 		set({ socket: socket });
