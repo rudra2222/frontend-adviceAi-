@@ -100,9 +100,9 @@ const ChatContainer = () => {
 								}`}
 							>
 								{message.media_info &&
-									message.media_info.mime_type.substring(
+									message.media_info?.mime_type?.substring(
 										0,
-										message.media_info.mime_type.indexOf(
+										message.media_info?.mime_type.indexOf(
 											"/"
 										)
 									) !== "video" && (
@@ -110,29 +110,29 @@ const ChatContainer = () => {
 											src={`${
 												import.meta.env.BACKEND_URL
 											}/api/v1/get-media?id=${
-												message.media_info.id
+												message.media_info?.id
 											}&type=${
-												message.media_info.mime_type?.substring(
+												message.media_info?.mime_type?.substring(
 													0,
-													message.media_info.mime_type?.indexOf(
+													message.media_info?.mime_type?.indexOf(
 														"/"
 													)
 												) +
 												"%2F" +
-												message.media_info.mime_type?.substring(
-													message.media_info.mime_type?.indexOf(
+												message.media_info?.mime_type?.substring(
+													message.media_info?.mime_type?.indexOf(
 														"/"
 													) + 1
 												)
 											}`}
-											alt={message.media_info.description}
+											alt={message.media_info?.description}
 											className="sm:max-w-[200px] rounded-md mb-2"
 										/>
 									)}
 								{message.media_info &&
-									message.media_info.mime_type.substring(
+									message.media_info?.mime_type.substring(
 										0,
-										message.media_info.mime_type.indexOf(
+										message.media_info?.mime_type.indexOf(
 											"/"
 										)
 									) === "video" && (
@@ -140,17 +140,17 @@ const ChatContainer = () => {
 											src={`${
 												import.meta.env.BACKEND_URL
 											}/api/v1/get-media?id=${
-												message.media_info.id
+												message.media_info?.id
 											}&type=${
-												message.media_info.mime_type?.substring(
+												message.media_info?.mime_type?.substring(
 													0,
-													message.media_info.mime_type?.indexOf(
+													message.media_info?.mime_type?.indexOf(
 														"/"
 													)
 												) +
 												"%2F" +
-												message.media_info.mime_type?.substring(
-													message.media_info.mime_type?.indexOf(
+												message.media_info?.mime_type?.substring(
+													message.media_info?.mime_type?.indexOf(
 														"/"
 													) + 1
 												)
