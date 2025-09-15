@@ -15,7 +15,6 @@ export const useChatStore = create((set, get) => ({
 		set({ isConversationsLoading: true });
 		try {
 			const res = await axiosInstance.get("/conversations/");
-			console.log(res.data);
 			set({
 				criticalConversations: [...res.data.criticalConversations],
 				conversations: [
@@ -36,7 +35,6 @@ export const useChatStore = create((set, get) => ({
 			const res = await axiosInstance.get(
 				`/conversations?offset=${lastConversationId}&limit=100`
 			);
-			console.log(res.data);
 			set({
 				conversations: [
 					...get().conversations,
@@ -56,7 +54,6 @@ export const useChatStore = create((set, get) => ({
 			const res = await axiosInstance.get(
 				`/conversations/${conversationId}/`
 			);
-			console.log(res.data);
 			res.data.conversation.human_intervention_required
 				? set({
 						criticalConversations: [
@@ -75,7 +72,6 @@ export const useChatStore = create((set, get) => ({
 						],
 				  });
 		} catch (error) {
-			console.log(error);
 			toast.error(error.response.data.message);
 		} finally {
 			set({ isConversationsLoading: false });
@@ -111,8 +107,6 @@ export const useChatStore = create((set, get) => ({
 		const socket = useAuthStore.getState().socket;
 
 		socket?.on("newMessage", async (newMessage) => {
-			console.log("New message received", newMessage);
-
 			let isContains = false;
 			get().conversations?.map((conv) => {
 				if (conv.id === newMessage.conversation_id) {

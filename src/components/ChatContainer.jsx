@@ -45,6 +45,11 @@ const ChatContainer = () => {
 		);
 	}
 
+	const BACKEND_URL =
+		import.meta.env.MODE === "development"
+			? "http://localhost:2025"
+			: import.meta.env.BACKEND_URL;
+
 	return (
 		<div className="flex-1 flex flex-col overflow-auto">
 			<ChatHeader />
@@ -99,66 +104,143 @@ const ChatContainer = () => {
 										: "bg-zinc-800"
 								}`}
 							>
-								{message.media_info &&
-									message.media_info?.mime_type?.substring(
+								{((JSON.parse(message.media_info)?.id !==
+									null &&
+									JSON.parse(
+										message.media_info
+									)?.mime_type?.substring(
 										0,
-										message.media_info?.mime_type.indexOf(
-											"/"
-										)
-									) !== "video" && (
-										<img
-											src={`${
-												import.meta.env.BACKEND_URL
-											}/api/v1/get-media?id=${
-												message.media_info?.id
-											}&type=${
-												message.media_info?.mime_type?.substring(
-													0,
-													message.media_info?.mime_type?.indexOf(
-														"/"
-													)
-												) +
-												"%2F" +
-												message.media_info?.mime_type?.substring(
-													message.media_info?.mime_type?.indexOf(
-														"/"
-													) + 1
-												)
-											}`}
-											alt={message.media_info?.description}
-											className="sm:max-w-[200px] rounded-md mb-2"
-										/>
-									)}
-								{message.media_info &&
-									message.media_info?.mime_type.substring(
+										JSON.parse(
+											message.media_info
+										)?.mime_type.indexOf("/")
+									) === "image") ||
+									JSON.parse(
+										message.media_info
+									)?.mime_type?.substring(
 										0,
-										message.media_info?.mime_type.indexOf(
-											"/"
-										)
+										JSON.parse(
+											message.media_info
+										)?.mime_type.indexOf("/")
+									) === "gif") && (
+									<img
+										src={`${BACKEND_URL}/api/v1/get-media?id=${
+											JSON.parse(message.media_info)?.id
+										}&type=${
+											JSON.parse(
+												message.media_info
+											)?.mime_type?.substring(
+												0,
+												JSON.parse(
+													message.media_info
+												)?.mime_type?.indexOf("/")
+											) +
+											"%2F" +
+											JSON.parse(
+												message.media_info
+											)?.mime_type?.substring(
+												JSON.parse(
+													message.media_info
+												)?.mime_type?.indexOf("/") + 1
+											)
+										}`}
+										alt={
+											JSON.parse(message.media_info)
+												?.description?.length > 0 &&
+											JSON.parse(message.media_info)
+												?.description
+										}
+										className="sm:max-w-[200px] rounded-md mb-2"
+									/>
+								)}
+								{JSON.parse(message.media_info)?.id !== null &&
+									JSON.parse(
+										message.media_info
+									)?.mime_type?.substring(
+										0,
+										JSON.parse(
+											message.media_info
+										)?.mime_type?.indexOf("/")
 									) === "video" && (
 										<video
-											src={`${
-												import.meta.env.BACKEND_URL
-											}/api/v1/get-media?id=${
-												message.media_info?.id
+											src={`${BACKEND_URL}/api/v1/get-media?id=${
+												JSON.parse(message.media_info)
+													?.id
 											}&type=${
-												message.media_info?.mime_type?.substring(
+												JSON.parse(
+													message.media_info
+												)?.mime_type?.substring(
 													0,
-													message.media_info?.mime_type?.indexOf(
-														"/"
-													)
+													JSON.parse(
+														message.media_info
+													)?.mime_type?.indexOf("/")
 												) +
 												"%2F" +
-												message.media_info?.mime_type?.substring(
-													message.media_info?.mime_type?.indexOf(
-														"/"
-													) + 1
+												JSON.parse(
+													message.media_info
+												)?.mime_type?.substring(
+													JSON.parse(
+														message.media_info
+													)?.mime_type?.indexOf("/") +
+														1
 												)
 											}`}
-											alt={message.media_info.description}
+											alt={
+												JSON.parse(message.media_info)
+													?.description?.length > 0
+													? "Video"
+													: JSON.parse(
+															message.media_info
+													  )?.description
+											}
 											className="sm:max-w-[200px] rounded-md mb-2"
 											controls
 										/>
+									)}
+								{JSON.parse(message.media_info)?.id !== null &&
+									JSON.parse(
+										message.media_info
+									)?.mime_type?.substring(
+										0,
+										JSON.parse(
+											message.media_info
+										)?.mime_type?.indexOf("/")
+									) === "audio" && (
+										<audio controls>
+											<source
+												src={`${BACKEND_URL}/api/v1/get-media?id=${
+													JSON.parse(
+														message.media_info
+													)?.id
+												}&type=${
+													JSON.parse(
+														message.media_info
+													)?.mime_type?.substring(
+														0,
+														JSON.parse(
+															message.media_info
+														)?.mime_type?.indexOf(
+															"/"
+														)
+													) +
+													"%2F" +
+													JSON.parse(
+														message.media_info
+													)?.mime_type?.substring(
+														JSON.parse(
+															message.media_info
+														)?.mime_type?.indexOf(
+															"/"
+														) + 1
+													)
+												}`}
+												type={
+													JSON.parse(
+														message.media_info
+													)?.mime_type
+												}
+												className="sm:max-w-[200px] rounded-md mb-2"
+											/>
+										</audio>
 									)}
 								{message.has_text && (
 									<p>{message.message_text}</p>

@@ -29,8 +29,6 @@ const App = () => {
 		subscribeToMessages();
 	}, [socket]);
 
-	console.log({ authUser });
-
 	if (isCheckingAuth && !authUser)
 		return (
 			<div className="flex items-center justify-center h-screen">
