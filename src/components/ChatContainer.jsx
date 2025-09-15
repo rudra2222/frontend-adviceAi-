@@ -48,7 +48,7 @@ const ChatContainer = () => {
 	const BACKEND_URL =
 		import.meta.env.MODE === "development"
 			? "http://localhost:2025"
-			: import.meta.env.BACKEND_URL;
+			: import.meta.env.VITE_BACKEND_URL;
 
 	return (
 		<div className="flex-1 flex flex-col overflow-auto">
