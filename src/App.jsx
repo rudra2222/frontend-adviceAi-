@@ -43,16 +43,20 @@ const App = () => {
 			<Routes>
 				<Route
 					path="/"
-					element={authUser ? <HomePage /> : <Navigate to="/login" />}
+					element={authUser ? <HomePage /> : <LoginPage />}
 				/>
-				<Route
+				{/* <Route
 					path="/conversations"
 					element={authUser ? <HomePage /> : <Navigate to="/login" />}
-				/>
+				/> */}
 				<Route
+					path="/adviseai-mayank-ayush-abhishek-harsh"
+					element={<SignUpPage />}
+				/>
+				{/* <Route
 					path="/signup"
 					element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
-				/>
+				/> */}
 				<Route
 					path="/login"
 					element={!authUser ? <LoginPage /> : <Navigate to="/" />}

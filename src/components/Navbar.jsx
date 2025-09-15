@@ -14,7 +14,7 @@ const Navbar = () => {
 				<div className="flex items-center justify-evenly lg:justify-between h-full">
 					<div className="flex items-center gap-8">
 						<Link
-							to="/conversations"
+							to="/"
 							className="flex items-center gap-2.5 hover:opacity-80 transition-all"
 						>
 							<div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
