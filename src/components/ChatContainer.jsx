@@ -194,6 +194,7 @@ const ChatContainer = () => {
 											}
 											className="sm:max-w-[200px] rounded-md mb-2"
 											controls
+											preload="none"
 										/>
 									)}
 								{JSON.parse(message.media_info)?.id !== null &&
