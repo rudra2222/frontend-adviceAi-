@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
-import { useAuthStore } from "../store/useAuthStore";
+// import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
 
@@ -14,10 +14,10 @@ const ChatContainer = () => {
 		getMessages,
 		isMessagesLoading,
 		selectedConversation,
-		subscribeToMessages,
-		unsubscribeFromMessages,
+		// subscribeToMessages,
+		// unsubscribeFromMessages,
 	} = useChatStore();
-	const { authUser } = useAuthStore();
+	// const { authUser } = useAuthStore();
 	const messageEndRef = useRef(null);
 
 	useEffect(() => {
@@ -25,8 +25,8 @@ const ChatContainer = () => {
 	}, [
 		selectedConversation.id,
 		getMessages,
-		subscribeToMessages,
-		unsubscribeFromMessages,
+		// subscribeToMessages,
+		// unsubscribeFromMessages,
 	]);
 
 	useEffect(() => {
