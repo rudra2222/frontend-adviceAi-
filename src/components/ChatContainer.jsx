@@ -47,7 +47,7 @@ const ChatContainer = () => {
 
 	const BACKEND_URL =
 		import.meta.env.MODE === "development"
-			? "http://localhost:2025"
+			? import.meta.env.VITE_LOCAL_URL
 			: import.meta.env.VITE_BACKEND_URL;
 
 	return (
@@ -56,6 +56,8 @@ const ChatContainer = () => {
 
 			<div className="flex-1 overflow-y-auto p-4 space-y-4">
 				{messages.map((message) => {
+					if (message.conversation_id !== selectedConversation.id)
+                        return null;
 					return (
 						<div
 							key={message.id}
