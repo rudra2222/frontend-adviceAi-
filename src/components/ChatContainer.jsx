@@ -246,7 +246,7 @@ const ChatContainer = () => {
 										</audio>
 									)}
 								{message.has_text && (
-									<p>{message.message_text}</p>
+									<p className="whitespace-pre-wrap">{message.message_text}</p>
 								)}
 							</div>
 						</div>
