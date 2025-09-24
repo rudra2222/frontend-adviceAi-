@@ -236,6 +236,17 @@ export class LabelManager {
 		this.cache.delete(labelId);
 	}
 
+	// Update label by id
+	async putLabel(label) {
+		const db = await this.dbPromise;
+		const compressed = this._compressLabel({
+			...label,
+			lastUsed: Date.now(),
+		});
+		await db.put("labels", { ...compressed, id: label.id });
+		this.cache.set(label.id, compressed);
+	}
+
 	// Background cleanup of old/unused labels
 	_startCleanup() {
 		setInterval(async () => {
