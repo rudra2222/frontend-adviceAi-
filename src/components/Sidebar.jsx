@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
-// import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { Users, Image } from "lucide-react";
+import { Users, Image, Plus } from "lucide-react";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
+
+// Example default labels
+const DEFAULT_LABELS = [{ name: "All" }, { name: "Critical" }];
 
 const Sidebar = () => {
 	const {
@@ -15,30 +17,59 @@ const Sidebar = () => {
 		isConversationsLoading,
 	} = useChatStore();
 
-	// const { onlineUsers } = useAuthStore();
-	// const [showCriticalConversations, setShowCriticalConversations] =
-	// 	useState(false);
+	const [labels, setLabels] = useState(DEFAULT_LABELS);
+	const [activeLabel, setActiveLabel] = useState("All");
+	const [showLabelModal, setShowLabelModal] = useState(false);
+	const [newLabelName, setNewLabelName] = useState("");
+	const [selectedContacts, setSelectedContacts] = useState([]);
 
 	useEffect(() => {
 		getInitialConversations();
 	}, []);
 
-	// const conversationsToShow = showCriticalConversations
-	// 	? criticalConversations
-	// 	: conversations;
-
-	// Sort conversations by latest message timestamp (descending)
-	const sortedConversations = [...(conversations || [])].sort((a, b) => {
-		const aTime = a.last_message?.provider_ts
-			? new Date(a.last_message.provider_ts).getTime()
-			: 0;
-		const bTime = b.last_message?.provider_ts
-			? new Date(b.last_message.provider_ts).getTime()
-			: 0;
-		return bTime - aTime;
+	// Filter conversations based on label
+	const filteredConversations = conversations.filter((conv) => {
+		if (activeLabel === "All") return true;
+		if (activeLabel === "Unread") return conv.unread;
+		if (activeLabel === "Favorites") return conv.favorite;
+		if (activeLabel === "Groups") return conv.is_group;
+		// Custom label: check if conversation is associated
+		return conv.labels?.includes(activeLabel);
 	});
 
+	// Sort conversations by latest message timestamp (descending)
+	const sortedConversations = [...(filteredConversations || [])].sort(
+		(a, b) => {
+			const aTime = a.last_message?.provider_ts
+				? new Date(a.last_message.provider_ts).getTime()
+				: 0;
+			const bTime = b.last_message?.provider_ts
+				? new Date(b.last_message.provider_ts).getTime()
+				: 0;
+			return bTime - aTime;
+		}
+	);
+
 	if (isConversationsLoading) return <SidebarSkeleton />;
+
+	// Modal for adding a new label
+	const handleAddLabel = () => {
+		if (!newLabelName.trim()) return;
+		setLabels([...labels, { name: newLabelName }]);
+		// Associate selected contacts with the new label
+		selectedContacts.forEach((convId) => {
+			const idx = conversations.findIndex((c) => c.id === convId);
+			if (idx !== -1) {
+				conversations[idx].labels = [
+					...(conversations[idx].labels || []),
+					newLabelName,
+				];
+			}
+		});
+		setNewLabelName("");
+		setSelectedContacts([]);
+		setShowLabelModal(false);
+	};
 
 	return (
 		<aside className="h-full w-20 lg:w-96 border-r border-base-300 flex flex-col transition-all duration-200">
@@ -49,27 +80,98 @@ const Sidebar = () => {
 						Contacts
 					</span>
 				</div>
-				{/* TODO: Critical chats filter toggle */}
-				{/* <div className="mt-3 hidden lg:flex items-center gap-2">
-					<label className="cursor-pointer flex items-center gap-2">
-						<input
-							type="checkbox"
-							checked={showCriticalConversations}
-							onChange={(e) =>
-								setShowCriticalConversations(e.target.checked)
-							}
-							className="checkbox checkbox-sm"
-						/>
-						<span className="text-sm">
-							Show Critical Conversations
-						</span>
-					</label>
-					<span className="text-xs text-zinc-500">
-						({onlineUsers.length == 0 ? 0 : onlineUsers.length - 1}{" "}
-						online)
-					</span>
-				</div> */}
 			</div>
+
+			{/* Labels section */}
+			<div className="w-full px-2 py-2 border-b border-base-300">
+				<div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+					{labels.map((label) => (
+						<button
+							key={label.name}
+							onClick={() => setActiveLabel(label.name)}
+							className={`px-4 py-1 rounded-full border ${
+								activeLabel === label.name
+									? "bg-green-800 text-white"
+									: "bg-transparent text-zinc-300"
+							} whitespace-nowrap`}
+						>
+							{label.name}
+						</button>
+					))}
+					<button
+						onClick={() => setShowLabelModal(true)}
+						className="px-2 py-1 rounded-full border bg-transparent text-zinc-300 flex items-center"
+						title="Add label"
+					>
+						<Plus className="size-4" />
+					</button>
+				</div>
+			</div>
+
+			{/* Modal for adding label */}
+			{showLabelModal && (
+				<div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+					<div className="bg-zinc-900 p-6 rounded-lg w-80">
+						<h2 className="text-lg font-bold mb-2">Create Label</h2>
+						<input
+							type="text"
+							placeholder="Label name"
+							value={newLabelName}
+							onChange={(e) => setNewLabelName(e.target.value)}
+							className="input input-bordered w-full mb-3"
+						/>
+						<div className="mb-2 text-sm font-medium">
+							Select contacts:
+						</div>
+						<div className="max-h-32 overflow-y-auto mb-3">
+							{conversations.map((conv) => (
+								<label
+									key={conv.id}
+									className="flex items-center gap-2 mb-1"
+								>
+									<input
+										type="checkbox"
+										checked={selectedContacts.includes(
+											conv.id
+										)}
+										onChange={(e) => {
+											if (e.target.checked) {
+												setSelectedContacts([
+													...selectedContacts,
+													conv.id,
+												]);
+											} else {
+												setSelectedContacts(
+													selectedContacts.filter(
+														(id) => id !== conv.id
+													)
+												);
+											}
+										}}
+									/>
+									<span>{conv.name || "Unknown"}</span>
+								</label>
+							))}
+						</div>
+						<div className="flex justify-end gap-2">
+							<button
+								onClick={() => setShowLabelModal(false)}
+								className="btn btn-sm"
+							>
+								Cancel
+							</button>
+							<button
+								onClick={handleAddLabel}
+								className="btn btn-sm btn-success"
+							>
+								Add
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+			
+			{/* Conversations List */}
 
 			<div className="overflow-y-auto w-full py-3">
 				{sortedConversations?.map((conversation) => {
@@ -99,9 +201,9 @@ const Sidebar = () => {
 								)}
 								{conversation.name != null && (
 									<div
-										className={`size-12 object-cover rounded-full flex justify-center items-center ${
-											profilePicColors(conversation.name)
-										}`}
+										className={`size-12 object-cover rounded-full flex justify-center items-center ${profilePicColors(
+											conversation.name
+										)}`}
 									>
 										{conversation.name?.charAt(0) +
 											(conversation.name?.indexOf(" ") > 0
