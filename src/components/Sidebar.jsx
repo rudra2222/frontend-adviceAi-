@@ -560,110 +560,108 @@ const Sidebar = () => {
 
 			{/* Conversations List */}
 			<div className="overflow-y-auto w-full py-3 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-				{sortedConversations.map((conversation, idx) => (
-					<>
-						<button
-							key={conversation.id}
-							onClick={() =>
-								setSelectedConversation(conversation)
-							}
-							className={`w-full p-3 flex items-center gap-3 hover:bg-green-800 transition-colors ${
-								selectedConversation?.id === conversation.id
-									? "bg-stone-800 ring-1 ring-base-300"
-									: ""
-							}`}
-							aria-label={`Open chat with ${conversation.name}`}
-						>
-							<div className="relative mx-auto lg:mx-0">
-								{conversation.name == null && (
-									<img
-										src="/avatar.png"
-										alt="avatar"
-										className="size-12 object-cover rounded-full"
-									/>
-								)}
-								{conversation.name != null && (
-									<div
-										className={`size-12 object-cover rounded-full flex justify-center items-center ${profilePicColors(
-											conversation.name
-										)}`}
-									>
-										{conversation.name?.charAt(0) +
-											(conversation.name?.indexOf(" ") > 0
-												? conversation.name
-														?.substring(
-															conversation.name?.indexOf(
-																" "
-															) + 1
-														)
-														.charAt(0)
-												: "")}
-									</div>
-								)}
-							</div>
-							<div className="hidden lg:block text-left min-w-72">
-								<div className="flex justify-between">
-									<span className="font-medium truncate w-1/2">
-										{conversation.name?.length > 0
-											? conversation.name
-											: "Unknown"}
-									</span>
-									{conversation.last_message?.id && (
-										<span className="text-xs text-zinc-500 ">
-											{formatMessageTime(
-												conversation.last_message
-													.provider_ts
-											)}
-										</span>
-									)}
-								</div>
-								<div>
-									{conversation.last_message?.id && (
-										<p className="flex items-center gap-1 text-sm text-zinc-400 truncate w-64">
-											{conversation.last_message
-												.media_info == null ? null : (
-												<Image className="size-4" />
-											)}
-											{conversation.last_message
-												.message_text?.length > 0
-												? conversation.last_message
-														.message_text
-												: "Media"}
-										</p>
-									)}
-								</div>
-							</div>
-						</button>
-						{/* Manage Label Button after last conversation */}
-						{idx === sortedConversations.length - 1 &&
-							activeLabel !== "All" &&
-							activeLabel !== "Critical" && (
-								<>
-									<div className="border-t border-zinc-800 my-2" />
-									<div className="flex justify-center py-2">
-										<button
-											className="px-4 py-2 rounded bg-zinc-900 text-green-400 text-base font-medium hover:bg-zinc-800 transition-all"
-											onClick={() => {
-												const labelObj = labels.find(
-													(l) =>
-														l.name === activeLabel
-												);
-												if (labelObj)
-													setManageLabelModal({
-														open: true,
-														label: labelObj,
-													});
-											}}
-											aria-label={`Manage ${activeLabel}`}
-										>
-											Manage {activeLabel}
-										</button>
-									</div>
-								</>
+				{sortedConversations.map((conversation) => (
+					<button
+						key={conversation.id}
+						onClick={() => setSelectedConversation(conversation)}
+						className={`w-full p-3 flex items-center gap-3 hover:bg-green-800 transition-colors ${
+							selectedConversation?.id === conversation.id
+								? "bg-stone-800 ring-1 ring-base-300"
+								: ""
+						}`}
+						aria-label={`Open chat with ${conversation.name}`}
+					>
+						<div className="relative mx-auto lg:mx-0">
+							{conversation.name == null && (
+								<img
+									src="/avatar.png"
+									alt="avatar"
+									className="size-12 object-cover rounded-full"
+								/>
 							)}
-					</>
+							{conversation.name != null && (
+								<div
+									className={`size-12 object-cover rounded-full flex justify-center items-center ${profilePicColors(
+										conversation.name
+									)}`}
+								>
+									{conversation.name?.charAt(0) +
+										(conversation.name?.indexOf(" ") > 0
+											? conversation.name
+													?.substring(
+														conversation.name?.indexOf(
+															" "
+														) + 1
+													)
+													.charAt(0)
+											: "")}
+								</div>
+							)}
+						</div>
+						<div className="hidden lg:block text-left min-w-72">
+							<div className="flex justify-between">
+								<span className="font-medium truncate w-1/2">
+									{conversation.name?.length > 0
+										? conversation.name
+										: "Unknown"}
+								</span>
+								{conversation.last_message?.id && (
+									<span className="text-xs text-zinc-500 ">
+										{formatMessageTime(
+											conversation.last_message
+												.provider_ts
+										)}
+									</span>
+								)}
+							</div>
+							<div>
+								{conversation.last_message?.id && (
+									<p className="flex items-center gap-1 text-sm text-zinc-400 truncate w-64">
+										{conversation.last_message.media_info ==
+										null ? null : (
+											<Image className="size-4" />
+										)}
+										{conversation.last_message.message_text
+											?.length > 0
+											? conversation.last_message
+													.message_text
+											: "Media"}
+									</p>
+								)}
+							</div>
+						</div>
+					</button>
 				))}
 			</div>
+
+			{/* Always show Manage button for custom label (not All/Critical) */}
+			{activeLabel !== "All" &&
+				activeLabel !== "Critical" &&
+				labels.some(
+					(l) => l.name === activeLabel && l.id !== undefined
+				) && (
+					<>
+						<div className="border-t border-zinc-800 my-2" />
+						<div className="flex justify-center py-2">
+							<button
+								className="px-4 py-2 rounded bg-zinc-900 text-green-400 text-base font-medium hover:bg-zinc-800 transition-all"
+								onClick={() => {
+									const labelObj = labels.find(
+										(l) => l.name === activeLabel
+									);
+									if (labelObj)
+										setManageLabelModal({
+											open: true,
+											label: labelObj,
+										});
+								}}
+								aria-label={`Manage ${activeLabel}`}
+							>
+								Manage {activeLabel}
+							</button>
+						</div>
+					</>
+				)}
 
 			{manageLabelModal.open && (
 				<ManageLabelModal
