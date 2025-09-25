@@ -1,7 +1,16 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useChatStore } from "../store/useChatStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
-import { Users, Image, Plus, Trash2, Pencil } from "lucide-react";
+import {
+	Users,
+	Image,
+	Plus,
+	Trash2,
+	Pencil,
+	CircleMinus,
+	CirclePlus,
+	CircleX,
+} from "lucide-react";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
 import LabelManager from "../lib/LabelManager";
@@ -92,7 +101,7 @@ const ContactList = ({
 									className="text-red-400 px-2 py-1 rounded hover:bg-zinc-800"
 									aria-label={`Remove ${conv.name}`}
 								>
-									Remove
+									<CircleMinus />
 								</button>
 							) : (
 								<button
@@ -100,7 +109,7 @@ const ContactList = ({
 									className="text-green-400 px-2 py-1 rounded hover:bg-zinc-800"
 									aria-label={`Add ${conv.name}`}
 								>
-									Add
+									<CirclePlus />
 								</button>
 							)}
 						</div>
@@ -241,7 +250,7 @@ const ManageLabelModal = ({
 											className="text-red-400 px-2 py-1 rounded hover:bg-zinc-800"
 											aria-label={`Remove ${conv?.name}`}
 										>
-											Remove
+											<CircleX />
 										</button>
 									</div>
 								);
