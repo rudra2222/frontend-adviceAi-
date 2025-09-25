@@ -17,13 +17,31 @@ import LabelManager from "../lib/LabelManager";
 
 // --- Reusable Components ---
 
-const RenameLabelInput = ({ value, onChange, onBlur }) => {
+const RenameLabelInput = ({ value, onRename }) => {
 	const [editing, setEditing] = useState(false);
+	const [inputValue, setInputValue] = useState(value);
 	const inputRef = useRef(null);
+
+	useEffect(() => {
+		setInputValue(value);
+	}, [value]);
 
 	useEffect(() => {
 		if (editing && inputRef.current) inputRef.current.focus();
 	}, [editing]);
+
+	const handleBlur = () => {
+		setEditing(false);
+		if (inputValue.trim() && inputValue !== value) {
+			onRename(inputValue.trim());
+		}
+	};
+
+	const handleKeyDown = (e) => {
+		if (e.key === "Enter") {
+			inputRef.current.blur();
+		}
+	};
 
 	return (
 		<div className="flex items-center gap-2">
@@ -31,12 +49,10 @@ const RenameLabelInput = ({ value, onChange, onBlur }) => {
 				<input
 					ref={inputRef}
 					type="text"
-					value={value}
-					onChange={(e) => onChange(e.target.value)}
-					onBlur={() => {
-						setEditing(false);
-						onBlur && onBlur();
-					}}
+					value={inputValue}
+					onChange={(e) => setInputValue(e.target.value)}
+					onBlur={handleBlur}
+					onKeyDown={handleKeyDown}
 					className="bg-zinc-800 text-white rounded px-2 py-1 border border-zinc-700 w-56"
 					aria-label="Rename label"
 				/>
@@ -156,45 +172,13 @@ const ManageLabelModal = ({
 	label,
 	allConversations,
 	onClose,
-	onUpdateLabel,
+	onRename,
+	onAddContact,
+	onRemoveContact,
 	onDeleteLabel,
 }) => {
-	const [labelName, setLabelName] = useState(label.name);
-	const [contacts, setContacts] = useState(label.contacts || []);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-	useEffect(() => {
-		setLabelName(label.name);
-		setContacts(label.contacts || []);
-	}, [label]);
-
-	const handleRename = async () => {
-		if (labelName.trim() && labelName !== label.name) {
-			const updatedLabel = { ...label, name: labelName };
-			await onUpdateLabel(updatedLabel);
-		}
-	};
-
-	const handleAddContact = async (id) => {
-		if (!contacts.includes(id)) {
-			const updatedContacts = [...contacts, id];
-			setContacts(updatedContacts);
-			await onUpdateLabel({ ...label, contacts: updatedContacts });
-		}
-	};
-
-	const handleRemoveContact = async (id) => {
-		const updatedContacts = contacts.filter((cid) => cid !== id);
-		setContacts(updatedContacts);
-		await onUpdateLabel({ ...label, contacts: updatedContacts });
-	};
-
-	const handleDelete = async () => {
-		await onDeleteLabel(label.id);
-		setShowDeleteDialog(false);
-		onClose();
-	};
 
 	if (!open) return null;
 
@@ -207,11 +191,7 @@ const ManageLabelModal = ({
 		>
 			<div className="bg-zinc-900 rounded-2xl shadow-lg p-6 w-[500px] animate-fade-in flex flex-col gap-4">
 				<div className="flex items-center justify-between mb-2">
-					<RenameLabelInput
-						value={labelName}
-						onChange={setLabelName}
-						onBlur={handleRename}
-					/>
+					<RenameLabelInput value={label.name} onRename={onRename} />
 					<button
 						onClick={() => setShowDeleteDialog(true)}
 						className="p-2 rounded hover:bg-zinc-800"
@@ -226,12 +206,12 @@ const ManageLabelModal = ({
 						Contacts in label:
 					</p>
 					<div className="max-h-32 overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-						{contacts.length === 0 ? (
+						{label.contacts.length === 0 ? (
 							<p className="text-zinc-500 text-xs">
 								No contacts yet.
 							</p>
 						) : (
-							contacts.map((cid) => {
+							label.contacts.map((cid) => {
 								const conv = allConversations.find(
 									(c) => c.id === cid
 								);
@@ -244,9 +224,7 @@ const ManageLabelModal = ({
 											{conv?.name || "Unknown"}
 										</span>
 										<button
-											onClick={() =>
-												handleRemoveContact(cid)
-											}
+											onClick={() => onRemoveContact(cid)}
 											className="text-red-400 px-2 py-1 rounded hover:bg-zinc-800"
 											aria-label={`Remove ${conv?.name}`}
 										>
@@ -260,10 +238,10 @@ const ManageLabelModal = ({
 				</div>
 				<div className="border-b border-zinc-800 mb-2" />
 				<ContactList
-					contacts={contacts}
+					contacts={label.contacts}
 					allConversations={allConversations}
-					onAddContact={handleAddContact}
-					onRemoveContact={handleRemoveContact}
+					onAddContact={onAddContact}
+					onRemoveContact={onRemoveContact}
 					searchTerm={searchTerm}
 					setSearchTerm={setSearchTerm}
 				/>
@@ -278,7 +256,11 @@ const ManageLabelModal = ({
 				</div>
 				<DeleteConfirmDialog
 					open={showDeleteDialog}
-					onConfirm={handleDelete}
+					onConfirm={() => {
+						onDeleteLabel(label.id);
+						setShowDeleteDialog(false);
+						onClose();
+					}}
 					onCancel={() => setShowDeleteDialog(false)}
 				/>
 			</div>
@@ -323,7 +305,7 @@ const Sidebar = () => {
 	} = useChatStore();
 
 	const [labels, setLabels] = useState(DEFAULT_LABELS);
-	const [activeLabel, setActiveLabel] = useState("All");
+	const [activeLabelId, setActiveLabelId] = useState(null); // Use id instead of name
 	const [showLabelModal, setShowLabelModal] = useState(false);
 	const [newLabelName, setNewLabelName] = useState("");
 	const [selectedContacts, setSelectedContacts] = useState([]);
@@ -345,6 +327,7 @@ const Sidebar = () => {
 				setLabels(DEFAULT_LABELS);
 				setLabelsLoaded(true);
 				setConversationsWithLabels(conversations);
+				setActiveLabelId(null);
 				return;
 			}
 			try {
@@ -356,12 +339,23 @@ const Sidebar = () => {
 				setConversationsWithLabels(
 					syncLabelsToConversations(allLabels, conversations)
 				);
+				// If a label was selected, keep it selected by id
+				if (
+					activeLabelId &&
+					allLabels.some((l) => l.id === activeLabelId)
+				) {
+					setActiveLabelId(activeLabelId);
+				} else {
+					setActiveLabelId(null);
+				}
 			} catch (err) {
 				setLabels(DEFAULT_LABELS);
 				setLabelsLoaded(true);
 				setConversationsWithLabels(conversations);
+				setActiveLabelId(null);
 			}
 		})();
+		// eslint-disable-next-line
 	}, [conversations]);
 
 	useEffect(() => {
@@ -388,6 +382,7 @@ const Sidebar = () => {
 			setConversationsWithLabels(
 				syncLabelsToConversations(updatedLabels, conversations)
 			);
+			setActiveLabelId(id);
 		} catch (err) {
 			alert("Failed to save label: " + err.message);
 		}
@@ -396,7 +391,33 @@ const Sidebar = () => {
 		setShowLabelModal(false);
 	};
 
-	const handleUpdateLabel = async (updatedLabel) => {
+	const handleRenameLabel = async (newName) => {
+		const label = labels.find((l) => l.id === activeLabelId);
+		if (!label || !newName.trim() || label.name === newName.trim()) return;
+		const updatedLabel = { ...label, name: newName.trim() };
+		try {
+			await labelManager.putLabel(updatedLabel);
+			const updatedLabels = labels.map((l) =>
+				l.id === updatedLabel.id ? updatedLabel : l
+			);
+			setLabels(updatedLabels);
+			setConversationsWithLabels(
+				syncLabelsToConversations(updatedLabels, conversations)
+			);
+			// Keep the same label selected
+			setActiveLabelId(updatedLabel.id);
+		} catch (err) {
+			alert("Failed to rename label: " + err.message);
+		}
+	};
+
+	const handleAddContactToLabel = async (contactId) => {
+		const label = labels.find((l) => l.id === activeLabelId);
+		if (!label || label.contacts.includes(contactId)) return;
+		const updatedLabel = {
+			...label,
+			contacts: [...label.contacts, contactId],
+		};
 		try {
 			await labelManager.putLabel(updatedLabel);
 			const updatedLabels = labels.map((l) =>
@@ -407,7 +428,28 @@ const Sidebar = () => {
 				syncLabelsToConversations(updatedLabels, conversations)
 			);
 		} catch (err) {
-			alert("Failed to update label: " + err.message);
+			alert("Failed to add contact: " + err.message);
+		}
+	};
+
+	const handleRemoveContactFromLabel = async (contactId) => {
+		const label = labels.find((l) => l.id === activeLabelId);
+		if (!label || !label.contacts.includes(contactId)) return;
+		const updatedLabel = {
+			...label,
+			contacts: label.contacts.filter((cid) => cid !== contactId),
+		};
+		try {
+			await labelManager.putLabel(updatedLabel);
+			const updatedLabels = labels.map((l) =>
+				l.id === updatedLabel.id ? updatedLabel : l
+			);
+			setLabels(updatedLabels);
+			setConversationsWithLabels(
+				syncLabelsToConversations(updatedLabels, conversations)
+			);
+		} catch (err) {
+			alert("Failed to remove contact: " + err.message);
 		}
 	};
 
@@ -416,7 +458,7 @@ const Sidebar = () => {
 			await labelManager.removeLabel(labelId);
 			const updatedLabels = labels.filter((l) => l.id !== labelId);
 			setLabels(updatedLabels);
-			setActiveLabel("All");
+			setActiveLabelId(null);
 			setConversationsWithLabels(
 				syncLabelsToConversations(updatedLabels, conversations)
 			);
@@ -425,16 +467,22 @@ const Sidebar = () => {
 		}
 	};
 
-	const filteredConversations = useMemo(
-		() =>
-			(conversationsWithLabels || []).filter((conv) => {
-				if (activeLabel === "All") return true;
-				if (activeLabel === "Critical")
-					return conv.human_intervention_required;
-				return conv.labels?.includes(activeLabel);
-			}),
-		[conversationsWithLabels, activeLabel]
-	);
+	const filteredConversations = useMemo(() => {
+		if (!activeLabelId) {
+			return conversationsWithLabels;
+		}
+		const label = labels.find((l) => l.id === activeLabelId);
+		if (!label) return conversationsWithLabels;
+		if (label.name === "All") return conversationsWithLabels;
+		if (label.name === "Critical") {
+			return conversationsWithLabels.filter(
+				(conv) => conv.human_intervention_required
+			);
+		}
+		return conversationsWithLabels.filter((conv) =>
+			conv.labels?.includes(label.name)
+		);
+	}, [conversationsWithLabels, labels, activeLabelId]);
 
 	const sortedConversations = useMemo(
 		() =>
@@ -468,10 +516,11 @@ const Sidebar = () => {
 				<div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
 					{labels.map((label) => (
 						<button
-							key={label.name}
-							onClick={() => setActiveLabel(label.name)}
+							key={label.id ?? label.name}
+							onClick={() => setActiveLabelId(label.id ?? null)}
 							className={`px-4 py-1 rounded-full border ${
-								activeLabel === label.name
+								activeLabelId === label.id ||
+								(!activeLabelId && label.name === "All")
 									? "bg-green-800 text-white"
 									: "bg-transparent text-zinc-300"
 							} whitespace-nowrap`}
@@ -635,43 +684,46 @@ const Sidebar = () => {
 			</div>
 
 			{/* Always show Manage button for custom label (not All/Critical) */}
-			{activeLabel !== "All" &&
-				activeLabel !== "Critical" &&
-				labels.some(
-					(l) => l.name === activeLabel && l.id !== undefined
-				) && (
-					<>
-						<div className="border-t border-zinc-800 my-2" />
-						<div className="flex justify-center py-2">
-							<button
-								className="px-4 py-2 rounded bg-zinc-900 text-green-400 text-base font-medium hover:bg-zinc-800 transition-all"
-								onClick={() => {
-									const labelObj = labels.find(
-										(l) => l.name === activeLabel
-									);
-									if (labelObj)
-										setManageLabelModal({
-											open: true,
-											label: labelObj,
-										});
-								}}
-								aria-label={`Manage ${activeLabel}`}
-							>
-								Manage {activeLabel}
-							</button>
-						</div>
-					</>
-				)}
+			{activeLabelId && labels.some((l) => l.id === activeLabelId) && (
+				<>
+					<div className="border-t border-zinc-800 my-2" />
+					<div className="flex justify-center py-2">
+						<button
+							className="px-4 py-2 rounded bg-zinc-900 text-green-400 text-base font-medium hover:bg-zinc-800 transition-all"
+							onClick={() => {
+								const labelObj = labels.find(
+									(l) => l.id === activeLabelId
+								);
+								if (labelObj)
+									setManageLabelModal({
+										open: true,
+										label: labelObj,
+									});
+							}}
+							aria-label={`Manage ${
+								labels.find((l) => l.id === activeLabelId)
+									?.name || ""
+							}`}
+						>
+							Manage{" "}
+							{labels.find((l) => l.id === activeLabelId)?.name ||
+								""}
+						</button>
+					</div>
+				</>
+			)}
 
 			{manageLabelModal.open && (
 				<ManageLabelModal
 					open={manageLabelModal.open}
-					label={manageLabelModal.label}
+					label={labels.find((l) => l.id === activeLabelId)}
 					allConversations={conversations}
 					onClose={() =>
 						setManageLabelModal({ open: false, label: null })
 					}
-					onUpdateLabel={handleUpdateLabel}
+					onRename={handleRenameLabel}
+					onAddContact={handleAddContactToLabel}
+					onRemoveContact={handleRemoveContactFromLabel}
 					onDeleteLabel={handleDeleteLabel}
 				/>
 			)}
