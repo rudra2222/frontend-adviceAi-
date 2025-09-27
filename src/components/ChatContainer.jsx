@@ -73,7 +73,7 @@ const ChatContainer = () => {
 					).map(([day, dayMessages]) => (
 						<div key={day}>
 							<div className="flex justify-center my-2">
-								<span className="bg-zinc-700 text-xs text-gray-300 px-6 py-1.5 rounded-sm shadow">
+								<span className="bg-stone-900 text-xs text-stone-300 font-semibold p-2 my-3 rounded-lg shadow">
 									{(() => {
 										const now = new Date();
 										const msgDate = new Date(day);
