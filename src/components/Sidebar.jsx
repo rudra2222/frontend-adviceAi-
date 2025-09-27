@@ -665,7 +665,7 @@ const Sidebar = () => {
 							</div>
 							<div>
 								{conversation.last_message?.id && (
-									<p className="flex items-center gap-1 text-sm text-zinc-400 truncate w-64">
+									<p className="text-sm text-zinc-400 truncate w-64">
 										{conversation.last_message.media_info ==
 										null ? null : (
 											<Image className="size-4" />
