@@ -147,9 +147,9 @@ const ChatContainer = () => {
 										}`}
 										alt={
 											JSON.parse(message.media_info)
-												?.description?.length > 0 &&
+												?.description?.length > 0 ?
 											JSON.parse(message.media_info)
-												?.description
+												?.description : "Image"
 										}
 										className="sm:max-w-[200px] rounded-md mb-2"
 									/>

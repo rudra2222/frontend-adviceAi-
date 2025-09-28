@@ -2,154 +2,168 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
+import { AxiosHeaders } from "axios";
 
 export const useChatStore = create((set, get) => ({
-	messages: [],
-	criticalConversations: [],
-	conversations: [],
-	selectedConversation: null,
-	isConversationsLoading: false,
-	isMessagesLoading: false,
+    messages: [],
+    criticalConversations: [],
+    conversations: [],
+    selectedConversation: null,
+    isConversationsLoading: false,
+    isMessagesLoading: false,
 
-	getInitialConversations: async () => {
-		set({ isConversationsLoading: true });
-		try {
-			const res = await axiosInstance.get("/conversations/");
-			set({
-				criticalConversations: [...res.data.criticalConversations],
-				conversations: [
-					...res.data.criticalConversations,
-					...res.data.nonCriticalConversations,
-				],
-			});
-		} catch (error) {
-			toast.error(error.response.data.message);
-		} finally {
-			set({ isConversationsLoading: false });
-		}
-	},
+    getInitialConversations: async () => {
+        set({ isConversationsLoading: true });
+        try {
+            const res = await axiosInstance.get("/conversations/");
+            set({
+                criticalConversations: [...res.data.criticalConversations],
+                conversations: [
+                    ...res.data.criticalConversations,
+                    ...res.data.nonCriticalConversations,
+                ],
+            });
+        } catch (error) {
+            toast.error(error.response.data.message);
+        } finally {
+            set({ isConversationsLoading: false });
+        }
+    },
 
-	getNonCriticalConversationsPaginated: async (lastConversationId) => {
-		set({ isConversationsLoading: true });
-		try {
-			const res = await axiosInstance.get(
-				`/conversations?offset=${lastConversationId}&limit=100`
-			);
-			set({
-				conversations: [
-					...get().conversations,
-					...res.data.nonCriticalConversations,
-				],
-			});
-		} catch (error) {
-			toast.error(error.response.data.message);
-		} finally {
-			set({ isConversationsLoading: false });
-		}
-	},
+    getNonCriticalConversationsPaginated: async (lastConversationId) => {
+        set({ isConversationsLoading: true });
+        try {
+            const res = await axiosInstance.get(
+                `/conversations?offset=${lastConversationId}&limit=100`
+            );
+            set({
+                conversations: [
+                    ...get().conversations,
+                    ...res.data.nonCriticalConversations,
+                ],
+            });
+        } catch (error) {
+            toast.error(error.response.data.message);
+        } finally {
+            set({ isConversationsLoading: false });
+        }
+    },
 
-	getConversation: async (conversationId) => {
-		set({ isConversationsLoading: true });
-		try {
-			const res = await axiosInstance.get(
-				`/conversations/${conversationId}/`
-			);
-			res.data.conversation.human_intervention_required
-				? set({
-						criticalConversations: [
-							...get().criticalConversations,
-							res.data.conversation,
-						],
-						conversations: [
-							...get().conversations,
-							res.data.conversation,
-						],
-				  })
-				: set({
-						conversations: [
-							...get().conversations,
-							res.data.conversation,
-						],
-				  });
-		} catch (error) {
-			toast.error(error.response.data.message);
-		} finally {
-			set({ isConversationsLoading: false });
-		}
-	},
+    getConversation: async (conversationId) => {
+        set({ isConversationsLoading: true });
+        try {
+            const res = await axiosInstance.get(
+                `/conversations/${conversationId}/`
+            );
+            res.data.conversation.human_intervention_required
+                ? set({
+                      criticalConversations: [
+                          ...get().criticalConversations,
+                          res.data.conversation,
+                      ],
+                      conversations: [
+                          ...get().conversations,
+                          res.data.conversation,
+                      ],
+                  })
+                : set({
+                      conversations: [
+                          ...get().conversations,
+                          res.data.conversation,
+                      ],
+                  });
+        } catch (error) {
+            toast.error(error.response.data.message);
+        } finally {
+            set({ isConversationsLoading: false });
+        }
+    },
 
-	// sendMessage: async (messageData) => {
-	// 	const { selectedConversation, messages } = get();
-	// 	try {
-	// 		const res = await axiosInstance.post(
-	// 			`/messages/send/${selectedConversation.id}`,
-	// 			messageData
-	// 		);
-	// 		set({ messages: [...messages, res.data] });
-	// 	} catch (error) {
-	// 		toast.error(error.response.data.message);
-	// 	}
-	// },
+    sendMessage: async (messageData) => {
+        try {
+            let uploadRes;
+            if (messageData.file) {
+                const formData = new FormData();
+                formData.append("file", messageData.file);
+                uploadRes = await axiosInstance.post(
+                    "/messages/upload",
+                    formData
+                );
+            }
 
-	getMessages: async (conversationId) => {
-		set({ isMessagesLoading: true });
-		try {
-			const res = await axiosInstance.get(`/messages/${conversationId}`);
-			set({ messages: [...res.data.messages] });
-		} catch (error) {
-			toast.error(error.response.data.message);
-		} finally {
-			set({ isMessagesLoading: false });
-		}
-	},
+            const body = {
+                receiverPhone: get().selectedConversation.phone,
+                senderId: useAuthStore.getState().authUser?.id,
+                message: messageData.text,
+                media: uploadRes?.data?.fileName,
+                mimeType: messageData.fileType,
+            };
 
-	subscribeToMessages: () => {
-		const socket = useAuthStore.getState().socket;
+            const res = await axiosInstance.post("/messages/send", body);
+        } catch (error) {
+            toast.error(error.response?.data?.message);
+        }
+    },
 
-		socket?.on("newMessage", async (newMessage) => {
-			let isContains = false;
-			get().conversations?.map((conv) => {
-				if (conv.id === newMessage.conversation_id) {
-					isContains = true;
-					return;
-				}
-			});
+    getMessages: async (conversationId) => {
+        set({ isMessagesLoading: true });
+        try {
+            const res = await axiosInstance.get(`/messages/${conversationId}`);
+            set({ messages: [...res.data.messages] });
+        } catch (error) {
+            toast.error(error.response.data.message);
+        } finally {
+            set({ isMessagesLoading: false });
+        }
+    },
 
-			if (!isContains) {
-				get().getConversation(newMessage.conversation_id);
-			}
+    subscribeToMessages: () => {
+        const socket = useAuthStore.getState().socket;
 
-			set({
-				messages: [...get().messages, newMessage],
-			});
+        socket?.on("newMessage", async (newMessage) => {
+            let isContains = false;
+            get().conversations?.map((conv) => {
+                if (conv.id === newMessage.conversation_id) {
+                    isContains = true;
+                    return;
+                }
+            });
 
-			// Move the conversation to the top and update last_message
-			const conversations = get().conversations || [];
-			const updatedConversations = conversations.map((conv) =>
-				conv.id === newMessage.conversation_id
-					? {
-							...conv,
-							last_message: {
-								id: newMessage.id,
-								direction: newMessage.direction,
-								sender_id: newMessage.sender_id,
-								message_text: newMessage.message_text,
-								media_info: newMessage.media_info,
-								provider_ts: newMessage.provider_ts,
-							},
-					  }
-					: conv
-			);
+            if (!isContains) {
+                get().getConversation(newMessage.conversation_id);
+            }
 
-			set({ conversations: updatedConversations });
-		});
-	},
+            set({
+                messages: [...get().messages, newMessage],
+            });
 
-	// unsubscribeFromMessages: () => {
-	// 	const socket = useAuthStore.getState().socket;
-	// 	socket.off("newMessage");
-	// },
+            // Move the conversation to the top and update last_message
+            const conversations = get().conversations || [];
+            const updatedConversations = conversations.map((conv) =>
+                conv.id === newMessage.conversation_id
+                    ? {
+                          ...conv,
+                          last_message: {
+                              id: newMessage.id,
+                              direction: newMessage.direction,
+                              sender_id: newMessage.sender_id,
+                              message_text: newMessage.message_text,
+                              media_info: newMessage.media_info,
+                              provider_ts: newMessage.provider_ts,
+                          },
+                      }
+                    : conv
+            );
 
-	setSelectedConversation: (selectedConversation) =>
-		set({ selectedConversation }),
+            set({ conversations: updatedConversations });
+        });
+    },
+
+    // unsubscribeFromMessages: () => {
+    // 	const socket = useAuthStore.getState().socket;
+    // 	socket.off("newMessage");
+    // },
+
+    setSelectedConversation: (selectedConversation) =>
+        set({ selectedConversation }),
 }));
