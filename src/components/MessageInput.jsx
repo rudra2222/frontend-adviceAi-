@@ -14,7 +14,7 @@ const MessageInput = () => {
     const { sendMessage, isHumanInterventionActive } = useChatStore();
 
     const handleFileChange = (e) => {
-        const file = e.target.files[0];
+        let file = e.target.files[0];
         const FILE_SIZE_LIMIT = 10; // in MB
         if (file.size > FILE_SIZE_LIMIT * 1024 * 1024) {
             toast.error(
