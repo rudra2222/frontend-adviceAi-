@@ -20,6 +20,18 @@ const MessageInput = () => {
             toast.error(
                 `File size should not be greater than ${FILE_SIZE_LIMIT}MB`
             );
+            file = null;
+        }
+
+        if (
+            !(
+                file.type.startsWith("video/") ||
+                file.type.startsWith("image/") ||
+                file.type.startsWith("audio/")
+            )
+        ) {
+            toast.error(`File type not supported!`);
+            file = null;
         }
 
         fileRef.current = file;
