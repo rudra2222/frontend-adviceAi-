@@ -153,74 +153,44 @@ const ChatContainer = () => {
                                                 : "bg-zinc-800 text-white"
                                         } px-4 py-2`}
                                     >
-                                        {((JSON.parse(message.media_info)
-                                            ?.id !== null &&
-                                            JSON.parse(
-                                                message.media_info
-                                            )?.mime_type?.substring(
-                                                0,
-                                                JSON.parse(
-                                                    message.media_info
-                                                )?.mime_type.indexOf("/")
-                                            ) === "image") ||
-                                            JSON.parse(
-                                                message.media_info
-                                            )?.mime_type?.substring(
-                                                0,
-                                                JSON.parse(
-                                                    message.media_info
-                                                )?.mime_type.indexOf("/")
-                                            ) === "gif") && (
-                                            <img
-                                                src={`${BACKEND_URL}/api/v1/get-media?id=${
-                                                    JSON.parse(
-                                                        message.media_info
-                                                    )?.id
-                                                }&type=${
-                                                    JSON.parse(
-                                                        message.media_info
-                                                    )?.mime_type?.substring(
-                                                        0,
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.mime_type?.indexOf(
-                                                            "/"
-                                                        )
-                                                    ) +
-                                                    "%2F" +
-                                                    JSON.parse(
-                                                        message.media_info
-                                                    )?.mime_type?.substring(
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.mime_type?.indexOf(
-                                                            "/"
-                                                        ) + 1
-                                                    )
-                                                }`}
-                                                alt={
-                                                    JSON.parse(
-                                                        message.media_info
-                                                    )?.description?.length > 0
-                                                        ? JSON.parse(
-                                                              message.media_info
-                                                          )?.description
-                                                        : "Image"
-                                                }
-                                                className="sm:max-w-[200px] rounded-md mb-2"
-                                                loading="lazy"
-                                            />
-                                        )}
                                         {JSON.parse(message.media_info)?.id !==
                                             null &&
                                             JSON.parse(
                                                 message.media_info
-                                            )?.mime_type?.substring(
-                                                0,
-                                                JSON.parse(
-                                                    message.media_info
-                                                )?.mime_type?.indexOf("/")
-                                            ) === "video" && (
+                                            )?.mime_type?.startsWith(
+                                                "image/"
+                                            ) && (
+                                                <img
+                                                    src={`${BACKEND_URL}/api/v1/get-media?id=${
+                                                        JSON.parse(
+                                                            message.media_info
+                                                        )?.id
+                                                    }&type=${
+                                                        JSON.parse(
+                                                            message.media_info
+                                                        )?.mime_type
+                                                    }`}
+                                                    alt={
+                                                        JSON.parse(
+                                                            message.media_info
+                                                        )?.description?.length >
+                                                        0
+                                                            ? JSON.parse(
+                                                                  message.media_info
+                                                              )?.description
+                                                            : "Image"
+                                                    }
+                                                    className="sm:max-w-[200px] rounded-md mb-2"
+                                                    loading="lazy"
+                                                />
+                                            )}
+                                        {JSON.parse(message.media_info)?.id !==
+                                            null &&
+                                            JSON.parse(
+                                                message.media_info
+                                            )?.mime_type?.startsWith(
+                                                "video/"
+                                            ) && (
                                                 <video
                                                     src={`${BACKEND_URL}/api/v1/get-media?id=${
                                                         JSON.parse(
@@ -229,24 +199,7 @@ const ChatContainer = () => {
                                                     }&type=${
                                                         JSON.parse(
                                                             message.media_info
-                                                        )?.mime_type?.substring(
-                                                            0,
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.mime_type?.indexOf(
-                                                                "/"
-                                                            )
-                                                        ) +
-                                                        "%2F" +
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.mime_type?.substring(
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.mime_type?.indexOf(
-                                                                "/"
-                                                            ) + 1
-                                                        )
+                                                        )?.mime_type
                                                     }`}
                                                     alt={
                                                         JSON.parse(
@@ -267,12 +220,9 @@ const ChatContainer = () => {
                                             null &&
                                             JSON.parse(
                                                 message.media_info
-                                            )?.mime_type?.substring(
-                                                0,
-                                                JSON.parse(
-                                                    message.media_info
-                                                )?.mime_type?.indexOf("/")
-                                            ) === "audio" && (
+                                            )?.mime_type?.startsWith(
+                                                "audio/"
+                                            ) && (
                                                 <audio controls>
                                                     <source
                                                         src={`${BACKEND_URL}/api/v1/get-media?id=${
@@ -282,24 +232,7 @@ const ChatContainer = () => {
                                                         }&type=${
                                                             JSON.parse(
                                                                 message.media_info
-                                                            )?.mime_type?.substring(
-                                                                0,
-                                                                JSON.parse(
-                                                                    message.media_info
-                                                                )?.mime_type?.indexOf(
-                                                                    "/"
-                                                                )
-                                                            ) +
-                                                            "%2F" +
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.mime_type?.substring(
-                                                                JSON.parse(
-                                                                    message.media_info
-                                                                )?.mime_type?.indexOf(
-                                                                    "/"
-                                                                ) + 1
-                                                            )
+                                                            )?.mime_type
                                                         }`}
                                                         type={
                                                             JSON.parse(

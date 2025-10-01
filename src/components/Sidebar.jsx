@@ -4,6 +4,9 @@ import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import {
     Users,
     Image,
+    Clapperboard,
+    AudioLines,
+    File,
     Plus,
     Trash2,
     Pencil,
@@ -293,6 +296,20 @@ const syncLabelsToConversations = (labels = [], conversations = []) => {
         ...conv,
         labels: labelMap[conv.id] || [],
     }));
+};
+
+const renderIcon = (mimeType) => {
+    if (!mimeType) return null;
+    if (mimeType.startsWith("image/")) {
+        return <Image className="size-4" />;
+    }
+    if (mimeType.startsWith("video/")) {
+        return <Clapperboard className="size-4" />;
+    }
+    if (mimeType.startsWith("audio/")) {
+        return <AudioLines className="size-4" />;
+    }
+    return <File className="size-4" />;
 };
 
 const Sidebar = () => {
@@ -666,15 +683,27 @@ const Sidebar = () => {
                             <div>
                                 {conversation.last_message?.id && (
                                     <p className="flex items-center gap-1 text-sm text-zinc-400 truncate w-64">
-                                        {conversation.last_message.media_info ==
-                                        null ? null : (
-                                            <Image className="size-4" />
-                                        )}
+                                        {conversation.last_message.media_info &&
+                                            renderIcon(
+                                                JSON.parse(
+                                                    conversation.last_message
+                                                        .media_info
+                                                )?.mime_type
+                                            )}
                                         {conversation.last_message.message_text
                                             ?.length > 0
                                             ? conversation.last_message
                                                   .message_text
-                                            : "Media"}
+                                            : JSON.parse(
+                                                  conversation.last_message
+                                                      .media_info
+                                              )?.mime_type.substring(
+                                                  0,
+                                                  JSON.parse(
+                                                      conversation.last_message
+                                                          .media_info
+                                                  )?.mime_type?.indexOf("/")
+                                              )}
                                     </p>
                                 )}
                             </div>
