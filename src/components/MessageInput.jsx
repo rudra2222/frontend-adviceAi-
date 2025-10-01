@@ -43,12 +43,12 @@ const MessageInput = () => {
         if (fileRef.current) fileRef.current = null;
     };
 
-    const handleSendMessage = async (e) => {
+    const handleSendMessage = (e) => {
         e.preventDefault();
         if (!text.length > 0 && !filePreview) return;
 
         try {
-            await sendMessage({
+            sendMessage({
                 text,
                 file: fileRef.current,
                 fileType,

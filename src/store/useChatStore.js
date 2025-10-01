@@ -100,7 +100,7 @@ export const useChatStore = create((set, get) => ({
                           messageData.text?.length > 0
                               ? messageData.text
                               : null,
-                      media: uploadRes?.data?.fileName,
+                      media: uploadRes?.data?.fileId,
                       mimeType: messageData.fileType,
                   }
                 : {
