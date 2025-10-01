@@ -14,9 +14,11 @@ const ChatContainer = () => {
         getMessages,
         isMessagesLoading,
         selectedConversation,
+        setInterventionToggleDisabled,
         // subscribeToMessages,
         // unsubscribeFromMessages,
     } = useChatStore();
+
     // const { authUser } = useAuthStore();
     const messageEndRef = useRef(null);
 

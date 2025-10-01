@@ -11,10 +11,18 @@ const MessageInput = () => {
     const fileRef = useRef(null);
 
     const fileInputRef = useRef(null);
-    const { sendMessage } = useChatStore();
+    const { sendMessage, isHumanInterventionActive } = useChatStore();
 
     const handleFileChange = (e) => {
-        fileRef.current = e.target.files[0];
+        const file = e.target.files[0];
+        const FILE_SIZE_LIMIT = 10; // in MB
+        if (file.size > FILE_SIZE_LIMIT * 1024 * 1024) {
+            toast.error(
+                `File size should not be greater than ${FILE_SIZE_LIMIT}MB`
+            );
+        }
+
+        fileRef.current = file;
         if (!fileRef.current) return;
 
         setFileType(fileRef.current.type);
@@ -32,16 +40,16 @@ const MessageInput = () => {
         setFileType(null);
         setFileName("");
         if (fileInputRef.current) fileInputRef.current.value = "";
-        if (fileRef.current) fileRef.current.value = "";
+        if (fileRef.current) fileRef.current = null;
     };
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!text.trim() && !filePreview) return;
+        if (!text.length > 0 && !filePreview) return;
 
         try {
             await sendMessage({
-                text: text.trim(),
+                text,
                 file: fileRef.current,
                 fileType,
             });
@@ -51,9 +59,9 @@ const MessageInput = () => {
             setFileType(null);
             setFileName("");
             if (fileInputRef.current) fileInputRef.current.value = "";
-            if (fileRef.current) fileRef.current.value = "";
+            if (fileRef.current) fileRef.current = null;
         } catch (error) {
-            console.error("Failed to send message:", error);
+            toast.error("Failed to send message :(");
         }
     };
 
@@ -149,7 +157,11 @@ const MessageInput = () => {
                 <button
                     type="submit"
                     className="btn btn-sm btn-circle"
-                    disabled={!text.trim() && !filePreview}
+                    title="Send Message"
+                    disabled={
+                        (!text.length > 0 && !filePreview) ||
+                        !isHumanInterventionActive
+                    }
                 >
                     <Send size={22} />
                 </button>

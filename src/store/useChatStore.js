@@ -2,7 +2,6 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
-import { AxiosHeaders } from "axios";
 
 export const useChatStore = create((set, get) => ({
     messages: [],
@@ -11,6 +10,8 @@ export const useChatStore = create((set, get) => ({
     selectedConversation: null,
     isConversationsLoading: false,
     isMessagesLoading: false,
+    interventionToggleDisabled: false,
+    isHumanInterventionActive: false,
 
     getInitialConversations: async () => {
         set({ isConversationsLoading: true });
@@ -91,15 +92,34 @@ export const useChatStore = create((set, get) => ({
                 );
             }
 
-            const body = {
-                receiverPhone: get().selectedConversation.phone,
-                senderId: useAuthStore.getState().authUser?.id,
-                message: messageData.text,
-                media: uploadRes?.data?.fileName,
-                mimeType: messageData.fileType,
-            };
+            const body = uploadRes
+                ? {
+                      receiverPhone: get().selectedConversation.phone,
+                      senderId: useAuthStore.getState().authUser?.id,
+                      message:
+                          messageData.text?.length > 0
+                              ? messageData.text
+                              : null,
+                      media: uploadRes?.data?.fileName,
+                      mimeType: messageData.fileType,
+                  }
+                : {
+                      receiverPhone: get().selectedConversation.phone,
+                      senderId: useAuthStore.getState().authUser?.id,
+                      message:
+                          messageData.text?.length > 0
+                              ? messageData.text
+                              : null,
+                      media: null,
+                      mimeType: null,
+                  };
 
-            const res = await axiosInstance.post("/messages/send", body);
+            const res = await axiosInstance.post(
+                "/messages/send-message",
+                body
+            );
+
+            uploadRes = null;
         } catch (error) {
             toast.error(error.response?.data?.message);
         }
@@ -159,11 +179,50 @@ export const useChatStore = create((set, get) => ({
         });
     },
 
-    // unsubscribeFromMessages: () => {
-    // 	const socket = useAuthStore.getState().socket;
-    // 	socket.off("newMessage");
-    // },
-
     setSelectedConversation: (selectedConversation) =>
         set({ selectedConversation }),
+
+    setInterventionToggleDisabled: (interventionToggleDisabled) =>
+        set({ interventionToggleDisabled }),
+
+    setIsHumanInterventionActive: (isHumanInterventionActive) =>
+        set({ isHumanInterventionActive }),
+
+    takeover: async () => {
+        try {
+            set({ interventionToggleDisabled: true });
+
+            const res = await axiosInstance.post("/takeover", {
+                phone: get().selectedConversation.phone,
+            });
+
+            if (res.status !== 200) {
+                throw new Error();
+            }
+            set({ isHumanInterventionActive: true });
+        } catch (error) {
+            toast.error(error.response.data.message);
+        } finally {
+            set({ interventionToggleDisabled: false });
+        }
+    },
+
+    handback: async () => {
+        try {
+            set({ interventionToggleDisabled: true });
+
+            const res = await axiosInstance.post("/handback", {
+                phone: get().selectedConversation.phone,
+            });
+
+            if (res.status !== 200) {
+                throw new Error();
+            }
+            set({ isHumanInterventionActive: false });
+        } catch (error) {
+            toast.error(error.response.data.message);
+        } finally {
+            set({ interventionToggleDisabled: false });
+        }
+    },
 }));
