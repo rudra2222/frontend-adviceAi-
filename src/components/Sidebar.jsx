@@ -301,15 +301,15 @@ const syncLabelsToConversations = (labels = [], conversations = []) => {
 const renderIcon = (mimeType) => {
     if (!mimeType) return null;
     if (mimeType.startsWith("image/")) {
-        return <Image className="size-4" />;
+        return <Image className="size-4 inline mr-2 align-text-center" />;
     }
     if (mimeType.startsWith("video/")) {
-        return <Clapperboard className="size-4" />;
+        return <Clapperboard className="size-4 inline mr-2 align-text-center" />;
     }
     if (mimeType.startsWith("audio/")) {
-        return <AudioLines className="size-4" />;
+        return <AudioLines className="size-4 inline mr-2 align-text-center" />;
     }
-    return <File className="size-4" />;
+    return <File className="size-4 inline mr-2 align-text-center" />;
 };
 
 const Sidebar = () => {
@@ -682,7 +682,7 @@ const Sidebar = () => {
                             </div>
                             <div>
                                 {conversation.last_message?.id && (
-                                    <p className="flex items-center gap-1 text-sm text-zinc-400 truncate w-64">
+                                    <p className="text-sm text-zinc-400 truncate w-64">
                                         {conversation.last_message.media_info &&
                                             renderIcon(
                                                 JSON.parse(
