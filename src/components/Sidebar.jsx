@@ -303,6 +303,7 @@ const renderIcon = (mimeType) => {
     if (!mimeType) return null;
     if (mimeType.startsWith("image/")) {
         return <Image className="size-4 inline mr-2 align-text-center" />;
+        return <Image className="size-4 inline mr-2 align-text-center" />;
     }
     if (mimeType.startsWith("video/")) {
         return (
@@ -311,7 +312,9 @@ const renderIcon = (mimeType) => {
     }
     if (mimeType.startsWith("audio/")) {
         return <AudioLines className="size-4 inline mr-2 align-text-center" />;
+        return <AudioLines className="size-4 inline mr-2 align-text-center" />;
     }
+    return <File className="size-4 inline mr-2 align-text-center" />;
     return <File className="size-4 inline mr-2 align-text-center" />;
 };
 
