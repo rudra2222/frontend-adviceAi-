@@ -336,7 +336,7 @@ const Sidebar = () => {
         label: null,
     });
 
-    // Step 2: Add state for search query
+    // State for search query
     const [searchQuery, setSearchQuery] = useState("");
 
     // Load persistent labels on mount
