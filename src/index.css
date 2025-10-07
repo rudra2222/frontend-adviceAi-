@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Professional, unified dark scrollbar for labels section */
+@layer utilities {
+    .labels-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(60, 60, 60, 0.4) #232323; /* thumb and track both dark gray */
+    }
+    .labels-scrollbar::-webkit-scrollbar {
+        height: 3px;
+        background: transparent;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    .labels-scrollbar:hover::-webkit-scrollbar {
+        opacity: 1;
+    }
+    .labels-scrollbar::-webkit-scrollbar-track {
+        background: #232323; /* matches sidebar */
+        border-radius: 9999px;
+    }
+    .labels-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(60, 60, 60, 0.4); /* dark gray thumb, 40% opacity */
+        border-radius: 9999px;
+        transition: background 0.3s, box-shadow 0.3s;
+        box-shadow: none;
+    }
+    .labels-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(60, 60, 60, 0.7); /* dark gray thumb, 70% opacity */
+        box-shadow: 0 0 6px 2px rgba(60, 60, 60, 0.3);
+    }
+    .labels-scrollbar::-webkit-scrollbar-corner {
+        background: #232323;
+    }
+}
+
+/* For Firefox: hide by default, show on hover, match vertical colors */
+.labels-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+.labels-scrollbar:hover {
+    scrollbar-color: rgba(60, 60, 60, 0.7) #232323;
+}

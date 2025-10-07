@@ -597,7 +597,18 @@ const Sidebar = () => {
 
             {/* Labels section */}
             <div className="w-full px-2 py-2 border-b border-base-300">
-                <div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                <div
+                    className="
+            flex gap-2 overflow-x-auto
+            scrollbar-thin scrollbar-track-custom-dark scrollbar-thumb-custom-green
+            hover:scrollbar-visible
+            transition-all duration-300
+            scroll-smooth
+            labels-scrollbar
+        "
+                    // Optionally, add a min-h to ensure hover works easily
+                    style={{ minHeight: 44 }}
+                >
                     {labels.map((label) => (
                         <button
                             key={label.id ?? label.name}
