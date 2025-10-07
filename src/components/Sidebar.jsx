@@ -581,7 +581,7 @@ const Sidebar = () => {
                     </span>
                 </div>
             </div> */}
-            
+
             {/* Search BOX */}
             <ChatSearchBox
                 value={searchQuery}
@@ -704,11 +704,13 @@ const Sidebar = () => {
                             onClick={() =>
                                 setSelectedConversation(conversation)
                             }
-                            className={`w-full p-3 flex items-center gap-3 hover:bg-green-800 transition-colors ${
-                                selectedConversation?.id === conversation.id
-                                    ? "bg-stone-800 ring-1 ring-base-300"
-                                    : ""
-                            }`}
+                            className={`w-full p-3 flex items-center gap-3 transition-colors rounded-xl
+                                ${
+                                    selectedConversation?.id === conversation.id
+                                        ? "bg-stone-700  shadow-lg"
+                                        : "hover:bg-green-800 hover:shadow-md rounded-xl"
+                                }
+                            `}
                             aria-label={`Open chat with ${conversation.name}`}
                         >
                             <div className="relative mx-auto lg:mx-0">
