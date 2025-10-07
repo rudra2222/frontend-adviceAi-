@@ -15,7 +15,7 @@ const MessageInput = () => {
 
     const handleFileChange = (e) => {
         let file = e.target.files[0];
-        const FILE_SIZE_LIMIT = 10; // in MB
+        const FILE_SIZE_LIMIT = 15; // in MB
         if (file.size > FILE_SIZE_LIMIT * 1024 * 1024) {
             toast.error(
                 `File size should not be greater than ${FILE_SIZE_LIMIT}MB`
