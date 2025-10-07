@@ -17,6 +17,7 @@ import {
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
 import LabelManager from "../lib/LabelManager";
+import ChatSearchBox from "./ChatSearchBox";
 
 // --- Reusable Components ---
 
@@ -301,15 +302,17 @@ const syncLabelsToConversations = (labels = [], conversations = []) => {
 const renderIcon = (mimeType) => {
     if (!mimeType) return null;
     if (mimeType.startsWith("image/")) {
-        return <Image className="size-4" />;
+        return <Image className="size-4 inline mr-2 align-text-center" />;
     }
     if (mimeType.startsWith("video/")) {
-        return <Clapperboard className="size-4" />;
+        return (
+            <Clapperboard className="size-4 inline mr-2 align-text-center" />
+        );
     }
     if (mimeType.startsWith("audio/")) {
-        return <AudioLines className="size-4" />;
+        return <AudioLines className="size-4 inline mr-2 align-text-center" />;
     }
-    return <File className="size-4" />;
+    return <File className="size-4 inline mr-2 align-text-center" />;
 };
 
 const Sidebar = () => {
@@ -322,7 +325,7 @@ const Sidebar = () => {
     } = useChatStore();
 
     const [labels, setLabels] = useState(DEFAULT_LABELS);
-    const [activeLabelId, setActiveLabelId] = useState(null); // Use id instead of name
+    const [activeLabelId, setActiveLabelId] = useState(null);
     const [showLabelModal, setShowLabelModal] = useState(false);
     const [newLabelName, setNewLabelName] = useState("");
     const [selectedContacts, setSelectedContacts] = useState([]);
@@ -332,6 +335,9 @@ const Sidebar = () => {
         open: false,
         label: null,
     });
+
+    // Step 2: Add state for search query
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Load persistent labels on mount
     useEffect(() => {
@@ -484,22 +490,67 @@ const Sidebar = () => {
         }
     };
 
+    // Step 3: Filter conversations based on search query
     const filteredConversations = useMemo(() => {
+        let baseList;
         if (!activeLabelId) {
-            return conversationsWithLabels;
+            baseList = conversationsWithLabels;
+        } else {
+            const label = labels.find((l) => l.id === activeLabelId);
+            if (!label) baseList = conversationsWithLabels;
+            else if (label.name === "All") baseList = conversationsWithLabels;
+            else if (label.name === "Critical") {
+                baseList = conversationsWithLabels.filter(
+                    (conv) => conv.human_intervention_required
+                );
+            } else {
+                baseList = conversationsWithLabels.filter((conv) =>
+                    conv.labels?.includes(label.name)
+                );
+            }
         }
-        const label = labels.find((l) => l.id === activeLabelId);
-        if (!label) return conversationsWithLabels;
-        if (label.name === "All") return conversationsWithLabels;
-        if (label.name === "Critical") {
-            return conversationsWithLabels.filter(
-                (conv) => conv.human_intervention_required
+        if (!searchQuery.trim()) return baseList;
+        const query = searchQuery.trim().toLowerCase();
+        return baseList.filter((conv) => {
+            // Chat/group name
+            const nameMatch = (conv.name || "").toLowerCase().includes(query);
+            // Last message content
+            const lastMsgMatch = (conv.last_message?.message_text || "")
+                .toLowerCase()
+                .includes(query);
+            // Participant names (if available)
+            const participants =
+                conv.participants?.map((p) => p.name?.toLowerCase() || "") ||
+                [];
+            const participantMatch = participants.some((n) =>
+                n.includes(query)
             );
-        }
-        return conversationsWithLabels.filter((conv) =>
-            conv.labels?.includes(label.name)
-        );
-    }, [conversationsWithLabels, labels, activeLabelId]);
+            // Try to match query with participant numbers (if available)
+            const numberMatch =
+                conv.participants?.some((p) =>
+                    (p.number || "").toString().toLowerCase().includes(query)
+                ) || false;
+            // Optionally, match conversation's own number if present
+            const convNumberMatch = (conv.number || "")
+                .toString()
+                .toLowerCase()
+                .includes(query);
+            // --- NEW: match conversation.phone ---
+            const phoneMatch = (conv.phone || "")
+                .toString()
+                .toLowerCase()
+                .includes(query);
+
+            return (
+                nameMatch ||
+                lastMsgMatch ||
+                participantMatch ||
+                numberMatch ||
+                convNumberMatch ||
+                phoneMatch // <-- added for phone search
+            );
+        });
+    }, [conversationsWithLabels, labels, activeLabelId, searchQuery]);
 
     const sortedConversations = useMemo(
         () =>
@@ -527,6 +578,19 @@ const Sidebar = () => {
                     </span>
                 </div>
             </div>
+
+            {/* Search BOX */}
+            <ChatSearchBox
+                value={searchQuery}
+                onSearch={setSearchQuery}
+                activeTab={
+                    activeLabelId
+                        ? labels
+                              .find((l) => l.id === activeLabelId)
+                              ?.name?.toLowerCase() || "all"
+                        : "all"
+                }
+            />
 
             {/* Labels section */}
             <div className="w-full px-2 py-2 border-b border-base-300">
@@ -626,90 +690,101 @@ const Sidebar = () => {
 
             {/* Conversations List */}
             <div className="overflow-y-auto w-full py-3 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-                {sortedConversations.map((conversation) => (
-                    <button
-                        key={conversation.id}
-                        onClick={() => setSelectedConversation(conversation)}
-                        className={`w-full p-3 flex items-center gap-3 hover:bg-green-800 transition-colors ${
-                            selectedConversation?.id === conversation.id
-                                ? "bg-stone-800 ring-1 ring-base-300"
-                                : ""
-                        }`}
-                        aria-label={`Open chat with ${conversation.name}`}
-                    >
-                        <div className="relative mx-auto lg:mx-0">
-                            {conversation.name == null && (
-                                <img
-                                    src="/avatar.png"
-                                    alt="avatar"
-                                    className="size-12 object-cover rounded-full"
-                                />
-                            )}
-                            {conversation.name != null && (
-                                <div
-                                    className={`size-12 object-cover rounded-full flex justify-center items-center ${profilePicColors(
-                                        conversation.name
-                                    )}`}
-                                >
-                                    {conversation.name?.charAt(0) +
-                                        (conversation.name?.indexOf(" ") > 0
-                                            ? conversation.name
-                                                  ?.substring(
-                                                      conversation.name?.indexOf(
-                                                          " "
-                                                      ) + 1
-                                                  )
-                                                  .charAt(0)
-                                            : "")}
-                                </div>
-                            )}
-                        </div>
-                        <div className="hidden lg:block text-left min-w-72">
-                            <div className="flex justify-between">
-                                <span className="font-medium truncate w-1/2">
-                                    {conversation.name?.length > 0
-                                        ? conversation.name
-                                        : "Unknown"}
-                                </span>
-                                {conversation.last_message?.id && (
-                                    <span className="text-xs text-zinc-500 ">
-                                        {formatMessageTime(
-                                            conversation.last_message
-                                                .provider_ts
-                                        )}
-                                    </span>
+                {sortedConversations.length === 0 ? (
+                    <div className="text-center text-zinc-500 py-8">
+                        No chats found
+                    </div>
+                ) : (
+                    sortedConversations.map((conversation) => (
+                        <button
+                            key={conversation.id}
+                            onClick={() =>
+                                setSelectedConversation(conversation)
+                            }
+                            className={`w-full p-3 flex items-center gap-3 hover:bg-green-800 transition-colors ${
+                                selectedConversation?.id === conversation.id
+                                    ? "bg-stone-800 ring-1 ring-base-300"
+                                    : ""
+                            }`}
+                            aria-label={`Open chat with ${conversation.name}`}
+                        >
+                            <div className="relative mx-auto lg:mx-0">
+                                {conversation.name == null && (
+                                    <img
+                                        src="/avatar.png"
+                                        alt="avatar"
+                                        className="size-12 object-cover rounded-full"
+                                    />
+                                )}
+                                {conversation.name != null && (
+                                    <div
+                                        className={`size-12 object-cover rounded-full flex justify-center items-center ${profilePicColors(
+                                            conversation.name
+                                        )}`}
+                                    >
+                                        {conversation.name?.charAt(0) +
+                                            (conversation.name?.indexOf(" ") > 0
+                                                ? conversation.name
+                                                      ?.substring(
+                                                          conversation.name?.indexOf(
+                                                              " "
+                                                          ) + 1
+                                                      )
+                                                      .charAt(0)
+                                                : "")}
+                                    </div>
                                 )}
                             </div>
-                            <div>
-                                {conversation.last_message?.id && (
-                                    <p className="flex items-center gap-1 text-sm text-zinc-400 truncate w-64">
-                                        {conversation.last_message.media_info &&
-                                            renderIcon(
-                                                JSON.parse(
-                                                    conversation.last_message
-                                                        .media_info
-                                                )?.mime_type
+                            <div className="hidden lg:block text-left min-w-72">
+                                <div className="flex justify-between">
+                                    <span className="font-medium truncate w-1/2">
+                                        {conversation.name?.length > 0
+                                            ? conversation.name
+                                            : "Unknown"}
+                                    </span>
+                                    {conversation.last_message?.id && (
+                                        <span className="text-xs text-zinc-500 ">
+                                            {formatMessageTime(
+                                                conversation.last_message
+                                                    .provider_ts
                                             )}
-                                        {conversation.last_message.message_text
-                                            ?.length > 0
-                                            ? conversation.last_message
-                                                  .message_text
-                                            : JSON.parse(
-                                                  conversation.last_message
-                                                      .media_info
-                                              )?.mime_type.substring(
-                                                  0,
-                                                  JSON.parse(
+                                        </span>
+                                    )}
+                                </div>
+                                <div>
+                                    {conversation.last_message?.id && (
+                                        <p className="text-sm text-zinc-400 truncate w-64">
+                                            {conversation.last_message
+                                                .media_info &&
+                                                renderIcon(
+                                                    JSON.parse(
+                                                        conversation
+                                                            .last_message
+                                                            .media_info
+                                                    )?.mime_type
+                                                )}
+                                            {conversation.last_message
+                                                .message_text?.length > 0
+                                                ? conversation.last_message
+                                                      .message_text
+                                                : JSON.parse(
                                                       conversation.last_message
                                                           .media_info
-                                                  )?.mime_type?.indexOf("/")
-                                              )}
-                                    </p>
-                                )}
+                                                  )?.mime_type.substring(
+                                                      0,
+                                                      JSON.parse(
+                                                          conversation
+                                                              .last_message
+                                                              .media_info
+                                                      )?.mime_type?.indexOf("/")
+                                                  )}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    </button>
-                ))}
+                        </button>
+                    ))
+                )}
             </div>
 
             {/* Always show Manage button for custom label (not All/Critical) */}
