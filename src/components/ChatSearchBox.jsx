@@ -38,7 +38,7 @@ const ChatSearchBox = ({
         <div
             className={`flex items-center bg-zinc-900 rounded-2xl px-3 py-2 mb-2 sticky top-0 z-10 transition-all ${className} ${
                 isFocused
-                    ? "border-2 border-green-600"
+                    ? "border-2 border-green-700"
                     : "border border-zinc-800"
             }`}
             style={{
@@ -48,7 +48,7 @@ const ChatSearchBox = ({
         >
             <Search
                 className={`size-5 mr-2 transition-colors ${
-                    isFocused ? "text-green-400" : "text-zinc-400"
+                    isFocused ? "" : "text-zinc-400"
                 }`}
             />
             <input

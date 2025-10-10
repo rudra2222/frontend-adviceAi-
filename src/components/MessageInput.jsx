@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { Paperclip, Send, File, X } from "lucide-react";
 import toast from "react-hot-toast";
+import QuickReplyAutocomplete from "./QuickReplyAutocomplete";
 
 const MessageInput = () => {
     const [text, setText] = useState("");
@@ -12,6 +13,12 @@ const MessageInput = () => {
 
     const fileInputRef = useRef(null);
     const { sendMessage, isHumanInterventionActive } = useChatStore();
+
+    // Quick Reply states
+    const [showQuickReply, setShowQuickReply] = useState(false);
+    const [quickReplyQuery, setQuickReplyQuery] = useState("");
+    const [slashPosition, setSlashPosition] = useState(-1);
+    const textareaRef = useRef();
 
     const handleFileChange = (e) => {
         let file = e.target.files[0];
@@ -118,8 +125,102 @@ const MessageInput = () => {
         );
     };
 
+    const handleTextChange = (e) => {
+        const newText = e.target.value;
+        const cursorPos = e.target.selectionStart;
+        setText(newText);
+
+        // Detect quick reply trigger
+        const textBeforeCursor = newText.substring(0, cursorPos);
+        const lastSlashIndex = textBeforeCursor.lastIndexOf("/");
+
+        if (lastSlashIndex !== -1) {
+            const textAfterSlash = textBeforeCursor.substring(
+                lastSlashIndex + 1
+            );
+            // Check if there's no space after slash
+            if (!textAfterSlash.includes(" ")) {
+                setSlashPosition(lastSlashIndex);
+                setQuickReplyQuery(textAfterSlash);
+                setShowQuickReply(true);
+                return;
+            }
+        }
+
+        setShowQuickReply(false);
+        setQuickReplyQuery("");
+        setSlashPosition(-1);
+    };
+
+    const handleQuickReplySelect = (reply) => {
+        if (!reply) {
+            setShowQuickReply(false);
+            setQuickReplyQuery("");
+            setSlashPosition(-1);
+            return;
+        }
+
+        // Get current cursor position
+        const cursorPos = textareaRef.current?.selectionStart || text.length;
+
+        // Replace from slash to end of query with the message
+        const beforeSlash = text.substring(0, slashPosition);
+        const afterCursor = text.substring(cursorPos);
+        const newText = beforeSlash + reply.message + afterCursor;
+
+        setText(newText);
+        setShowQuickReply(false);
+        setQuickReplyQuery("");
+        setSlashPosition(-1);
+
+        // Set cursor at end of inserted text
+        setTimeout(() => {
+            const newCursorPos = beforeSlash.length + reply.message.length;
+            if (textareaRef.current) {
+                textareaRef.current.focus();
+                textareaRef.current.setSelectionRange(
+                    newCursorPos,
+                    newCursorPos
+                );
+            }
+        }, 0);
+    };
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        if (!showQuickReply) return;
+        const handleClickOutside = (e) => {
+            // Don't close if clicking inside the dropdown
+            if (
+                e.target.closest(".quick-reply-dropdown") ||
+                e.target === textareaRef.current
+            ) {
+                return;
+            }
+            setShowQuickReply(false);
+            setQuickReplyQuery("");
+            setSlashPosition(-1);
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, [showQuickReply]);
+
     return (
-        <div className="p-4 w-full">
+        <div className="p-4 w-full relative">
+            {/* Quick Reply Autocomplete */}
+            {showQuickReply && (
+                <div className="quick-reply-dropdown">
+                    <QuickReplyAutocomplete
+                        inputRef={textareaRef}
+                        isOpen={showQuickReply}
+                        query={quickReplyQuery}
+                        onSelect={handleQuickReplySelect}
+                        position={{ bottom: "100%", left: 0 }}
+                    />
+                </div>
+            )}
+
             {filePreview && (
                 <div className="mb-3 flex items-center gap-2">
                     <div className="relative">
@@ -141,11 +242,12 @@ const MessageInput = () => {
             >
                 <div className="flex-1 flex gap-2">
                     <input
+                        ref={textareaRef}
                         type="text"
-                        className="w-full input input-bordered rounded-lg input-sm sm:input-md"
-                        placeholder="Type your message..."
+                        className="w-full p-3 rounded-lg bg-base-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="Type a message..."
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={handleTextChange}
                     />
                     <input
                         type="file"
@@ -181,4 +283,5 @@ const MessageInput = () => {
         </div>
     );
 };
+
 export default MessageInput;
