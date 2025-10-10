@@ -71,6 +71,12 @@ const ChatContainer = () => {
                                     message.conversation_id ===
                                     selectedConversation.id
                             )
+                            // Sort messages by timestamp (oldest first)
+                            .sort(
+                                (a, b) =>
+                                    new Date(a.provider_ts) -
+                                    new Date(b.provider_ts)
+                            )
                             .reduce((acc, message) => {
                                 const date = new Date(message.provider_ts);
                                 const day = date.toDateString();

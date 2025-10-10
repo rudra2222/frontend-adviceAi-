@@ -20,7 +20,7 @@ const colors = [
 	"bg-slate-800", // S
 	"bg-stone-700", // T
 	"bg-neutral-800", // U
-	"bg-zinc-800", // V
+	"bg-zinc-900", // V
 	"bg-red-900", // W
 	"bg-green-900", // X
 	"bg-blue-800", // Y
