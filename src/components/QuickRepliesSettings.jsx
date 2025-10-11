@@ -7,6 +7,7 @@ import {
     MessageSquare,
     X,
     Zap,
+    Tag,
 } from "lucide-react";
 import { useQuickReplies } from "../context/QuickRepliesContext";
 
@@ -203,7 +204,7 @@ const QuickReplyModal = ({ isOpen, onClose, editingReply, onSave }) => {
 };
 
 // Main Quick Replies Settings Component
-const QuickRepliesSettings = ({ onBack }) => {
+const QuickRepliesSettings = ({ onBack, onNavigateToLabels }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingReply, setEditingReply] = useState(null);
     const { quickReplies, addQuickReply, updateQuickReply, deleteQuickReply } =
@@ -294,6 +295,40 @@ const QuickRepliesSettings = ({ onBack }) => {
                             ))}
                         </div>
                     )}
+
+                    {/* Labels Section */}
+                    <div className="mt-12 pt-8 border-t border-zinc-800">
+                        <div className="flex items-start justify-between mb-6">
+                            <div>
+                                <div className="mb-2 flex items-center gap-2">
+                                    <Tag className="w-5 h-5 text-zinc-400" />
+                                    <h2 className="text-zinc-100 text-[18px] font-medium">
+                                        Labels
+                                    </h2>
+                                </div>
+                                <p className="text-zinc-400 text-[14px]">
+                                    Organize conversations with custom labels
+                                </p>
+                            </div>
+                            <button
+                                onClick={onNavigateToLabels}
+                                className="flex items-center gap-2 bg-zinc-800 text-zinc-200 px-4 py-2 rounded-lg hover:bg-zinc-700 transition-all duration-150 active:scale-95 border border-zinc-700"
+                            >
+                                <span>Manage Labels</span>
+                            </button>
+                        </div>
+
+                        <div className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                            <p className="text-zinc-400 text-sm mb-2">
+                                Click "Manage Labels" to create and organize
+                                conversation labels.
+                            </p>
+                            <p className="text-zinc-500 text-xs">
+                                You can create up to 20 custom labels to
+                                categorize your conversations.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 

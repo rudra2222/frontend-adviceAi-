@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Search, Briefcase, HelpCircle, User } from "lucide-react";
+import { Search, Briefcase, HelpCircle, User, Tag } from "lucide-react";
 
 // Individual menu item (memoized for performance)
 const SettingsMenuItem = React.memo(function SettingsMenuItem({
@@ -48,7 +48,7 @@ const MENU_ITEMS = [
         key: "business",
         icon: Briefcase,
         title: "Business tools",
-        subtitle: "Manage replies, labels",
+        subtitle: "Quick replies, labels",
     },
     {
         key: "help",

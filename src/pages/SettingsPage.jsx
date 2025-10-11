@@ -3,9 +3,10 @@ import { Settings } from "lucide-react";
 import SettingsSidebar from "../components/SettingsSidebar";
 import QuickRepliesSettings from "../components/QuickRepliesSettings";
 import PrivacyPolicy from "../components/PrivacyPolicy";
+import LabelsManagement from "../components/LabelsManagement";
 
 function SettingsPage() {
-    const [currentView, setCurrentView] = useState("menu"); // "menu" | "business" | "help"
+    const [currentView, setCurrentView] = useState("menu"); // "menu" | "business" | "help" | "labels"
 
     return (
         <div className="flex h-screen bg-zinc-900">
@@ -15,7 +16,13 @@ function SettingsPage() {
                 <div className="absolute top-0 right-0 h-full w-[1px] bg-gradient-to-b from-zinc-700 via-zinc-600 to-zinc-700"></div>
             </div>
             {currentView === "business" && (
-                <QuickRepliesSettings onBack={() => setCurrentView("menu")} />
+                <QuickRepliesSettings
+                    onBack={() => setCurrentView("menu")}
+                    onNavigateToLabels={() => setCurrentView("labels")}
+                />
+            )}
+            {currentView === "labels" && (
+                <LabelsManagement onBack={() => setCurrentView("business")} />
             )}
             {currentView === "help" && (
                 <PrivacyPolicy onBack={() => setCurrentView("menu")} />
