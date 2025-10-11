@@ -129,7 +129,11 @@ export const useChatStore = create((set, get) => ({
         set({ isMessagesLoading: true });
         try {
             const res = await axiosInstance.get(`/messages/${conversationId}`);
-            set({ messages: [...res.data.messages] });
+            // Sort messages by timestamp
+            const sortedMessages = res.data.messages.sort(
+                (a, b) => new Date(a.provider_ts) - new Date(b.provider_ts)
+            );
+            set({ messages: sortedMessages });
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
@@ -188,6 +192,113 @@ export const useChatStore = create((set, get) => ({
     setIsHumanInterventionActive: (isHumanInterventionActive) =>
         set({ isHumanInterventionActive }),
 
+    // ==================== CRITICAL LABEL LOGIC START ====================
+    // TODO: To restore previous state, remove everything between these markers
+
+    // Add conversation to critical list when takeover is activated
+    addToCriticalConversations: (conversationId) => {
+        const conversations = get().conversations;
+        const conversation = conversations.find((c) => c.id === conversationId);
+
+        if (!conversation) return;
+
+        const criticalConversations = get().criticalConversations;
+        const alreadyExists = criticalConversations.some(
+            (c) => c.id === conversationId
+        );
+
+        if (!alreadyExists) {
+            set({
+                criticalConversations: [...criticalConversations, conversation],
+            });
+        }
+    },
+
+    // Remove conversation from critical list when takeover is deactivated
+    removeFromCriticalConversations: (conversationId) => {
+        const criticalConversations = get().criticalConversations;
+        set({
+            criticalConversations: criticalConversations.filter(
+                (c) => c.id !== conversationId
+            ),
+        });
+    },
+
+    // ==================== CRITICAL LABEL LOGIC END ====================
+
+    // ==================== LABEL ASSIGNMENT LOGIC START ====================
+    // TODO: Database migration needed - add conversation_labels junction table
+    // See useLabelsStore.js for complete database schema
+
+    // Assign label to conversation
+    assignLabelToConversation: (conversationId, label) => {
+        const conversations = get().conversations;
+        const selectedConversation = get().selectedConversation;
+
+        const updatedConversations = conversations.map((conv) => {
+            if (conv.id === conversationId) {
+                const existingLabels = conv.labels || [];
+                // Check if label already assigned
+                if (existingLabels.some((l) => l.id === label.id)) {
+                    return conv;
+                }
+                // Add new label
+                const updatedConv = {
+                    ...conv,
+                    labels: [...existingLabels, label],
+                };
+
+                // Update selected conversation if it's the same one
+                if (selectedConversation?.id === conversationId) {
+                    set({ selectedConversation: updatedConv });
+                }
+
+                return updatedConv;
+            }
+            return conv;
+        });
+
+        set({ conversations: updatedConversations });
+
+        // TODO: Call API to persist label assignment
+        // await axiosInstance.post(`/conversations/${conversationId}/labels`, {
+        //     labelId: label.id,
+        // });
+    },
+
+    // Remove label from conversation
+    removeLabelFromConversation: (conversationId, labelId) => {
+        const conversations = get().conversations;
+        const selectedConversation = get().selectedConversation;
+
+        const updatedConversations = conversations.map((conv) => {
+            if (conv.id === conversationId) {
+                const existingLabels = conv.labels || [];
+                const updatedConv = {
+                    ...conv,
+                    labels: existingLabels.filter((l) => l.id !== labelId),
+                };
+
+                // Update selected conversation if it's the same one
+                if (selectedConversation?.id === conversationId) {
+                    set({ selectedConversation: updatedConv });
+                }
+
+                return updatedConv;
+            }
+            return conv;
+        });
+
+        set({ conversations: updatedConversations });
+
+        // TODO: Call API to remove label assignment
+        // await axiosInstance.delete(
+        //     `/conversations/${conversationId}/labels/${labelId}`
+        // );
+    },
+
+    // ==================== LABEL ASSIGNMENT LOGIC END ====================
+
     takeover: async () => {
         try {
             set({ interventionToggleDisabled: true });
@@ -200,6 +311,11 @@ export const useChatStore = create((set, get) => ({
                 throw new Error();
             }
             set({ isHumanInterventionActive: true });
+
+            // ==================== CRITICAL LABEL LOGIC START ====================
+            // Add to critical conversations when takeover is activated
+            get().addToCriticalConversations(get().selectedConversation.id);
+            // ==================== CRITICAL LABEL LOGIC END ====================
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
@@ -219,6 +335,13 @@ export const useChatStore = create((set, get) => ({
                 throw new Error();
             }
             set({ isHumanInterventionActive: false });
+
+            // ==================== CRITICAL LABEL LOGIC START ====================
+            // Remove from critical conversations when takeover is deactivated
+            get().removeFromCriticalConversations(
+                get().selectedConversation.id
+            );
+            // ==================== CRITICAL LABEL LOGIC END ====================
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
