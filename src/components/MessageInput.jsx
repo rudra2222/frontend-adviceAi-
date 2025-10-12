@@ -20,6 +20,24 @@ const MessageInput = () => {
     const [slashPosition, setSlashPosition] = useState(-1);
     const textareaRef = useRef();
 
+    // Auto-resize textarea based on content (WhatsApp-style)
+    const adjustTextareaHeight = () => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        // Reset height to get accurate scrollHeight
+        textarea.style.height = "auto";
+
+        // Calculate new height (max 5 lines ~ 120px)
+        const newHeight = Math.min(textarea.scrollHeight, 120);
+        textarea.style.height = `${newHeight}px`;
+    };
+
+    // Adjust height whenever text changes
+    useEffect(() => {
+        adjustTextareaHeight();
+    }, [text]);
+
     const handleFileChange = (e) => {
         let file = e.target.files[0];
         const FILE_SIZE_LIMIT = 15; // in MB
@@ -79,6 +97,11 @@ const MessageInput = () => {
             setFileName("");
             if (fileInputRef.current) fileInputRef.current.value = "";
             if (fileRef.current) fileRef.current = null;
+
+            // Reset textarea height after sending
+            if (textareaRef.current) {
+                textareaRef.current.style.height = "auto";
+            }
         } catch (error) {
             toast.error("Failed to send message :(");
         }
@@ -236,18 +259,27 @@ const MessageInput = () => {
                 </div>
             )}
 
-            <form
-                onSubmit={handleSendMessage}
-                className="flex items-center gap-2"
-            >
-                <div className="flex-1 flex gap-2">
-                    <input
+            <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+                <div className="flex-1 flex gap-2 items-end">
+                    <textarea
                         ref={textareaRef}
-                        type="text"
-                        className="w-full p-3 rounded-lg bg-base-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        rows={1}
+                        className="w-full p-3 rounded-lg bg-base-200 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-y-auto transition-all duration-100 ease-out scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent"
+                        style={{
+                            minHeight: "44px",
+                            maxHeight: "120px",
+                            lineHeight: "1.5",
+                        }}
                         placeholder="Type a message..."
                         value={text}
                         onChange={handleTextChange}
+                        onKeyDown={(e) => {
+                            // Send on Enter (without Shift)
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage(e);
+                            }
+                        }}
                     />
                     <input
                         type="file"
@@ -270,7 +302,7 @@ const MessageInput = () => {
                 </div>
                 <button
                     type="submit"
-                    className="btn btn-sm btn-circle"
+                    className="btn btn-md btn-circle"
                     title="Send Message"
                     disabled={
                         (!text.length > 0 && !filePreview) ||
