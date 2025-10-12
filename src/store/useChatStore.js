@@ -153,6 +153,7 @@ export const useChatStore = create((set, get) => ({
                 }
             });
 
+            // If its a new conversation, fetch it
             if (!isContains) {
                 get().getConversation(newMessage.conversation_id);
             }
@@ -180,6 +181,50 @@ export const useChatStore = create((set, get) => ({
             );
 
             set({ conversations: updatedConversations });
+        });
+    },
+
+    subscribeToInterventionStatus: () => {
+        const socket = useAuthStore.getState().socket;
+
+        socket?.on("updateInterventionStatus", (statusUpdate) => {
+            const selectedConversation = get().selectedConversation;
+            if (selectedConversation?.id === statusUpdate.conversation_id) {
+                set({
+                    selectedConversation: {
+                        ...selectedConversation,
+                        human_intervention_required:
+                            statusUpdate.intervention_status,
+                    },
+                });
+            }
+            const conversations = get().conversations || [];
+            const updatedConversations = conversations.map((conv) => {
+                if (conv.id === statusUpdate.conversation_id) {
+                    return {
+                        ...conv,
+                        human_intervention_required:
+                            statusUpdate.intervention_status,
+                    };
+                }
+                return conv;
+            });
+            set({ conversations: updatedConversations });
+
+            if (statusUpdate.intervention_status === true) {
+                get().addToCriticalConversations(statusUpdate.conversation_id);
+                toast("A new Conversation is added to Critical!", {
+                    icon: "⚠️",
+                    style: {
+                        backgroundColor: "red",
+                        color: "white",
+                    },
+                });
+            } else {
+                get().removeFromCriticalConversations(
+                    statusUpdate.conversation_id
+                );
+            }
         });
     },
 

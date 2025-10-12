@@ -17,7 +17,7 @@ const ChatHeader = () => {
         setIsHumanInterventionActive(
             selectedConversation?.human_intervention_required
         );
-    }, [selectedConversation]);
+    }, [selectedConversation?.human_intervention_required]);
 
     return (
         <div className="p-2.5 border-b border-base-300">
