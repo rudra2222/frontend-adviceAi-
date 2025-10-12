@@ -14,7 +14,7 @@ const ChatContainer = () => {
         getMessages,
         isMessagesLoading,
         selectedConversation,
-        setInterventionToggleDisabled,
+        // setInterventionToggleDisabled,
         // subscribeToMessages,
         // unsubscribeFromMessages,
     } = useChatStore();
@@ -111,40 +111,31 @@ const ChatContainer = () => {
                                     }`}
                                     ref={messageEndRef}
                                 >
-                                    <div
-                                        className={`chat-image avatar size-10 rounded-full border flex justify-center items-center ${
-                                            message.direction === "inbound" &&
-                                            profilePicColors(
-                                                selectedConversation.name
-                                            )
-                                        }`}
-                                    >
-                                        {selectedConversation.name != null &&
-                                            message.direction === "inbound" &&
-                                            selectedConversation.name?.charAt(
-                                                0
-                                            ) +
-                                                (selectedConversation.name?.indexOf(
-                                                    " "
-                                                ) > 0
-                                                    ? selectedConversation.name
-                                                          ?.substring(
-                                                              selectedConversation.name?.indexOf(
-                                                                  " "
-                                                              ) + 1
-                                                          )
-                                                          .charAt(0)
-                                                    : "")}
+                                    {message.direction === "outbound" && (
+                                        <div
+                                            className={`chat-image avatar size-10 rounded-full border bg-black flex justify-center items-center ${
+                                                message.direction ===
+                                                    "inbound" &&
+                                                profilePicColors(
+                                                    selectedConversation.name
+                                                )
+                                            }`}
+                                        >
+                                            {message.sender_type === "ai" && (
+                                                <img
+                                                    src="/ai-avatar.png"
+                                                    alt="avatar"
+                                                />
+                                            )}
 
-                                        {(selectedConversation.name == null ||
-                                            message.direction ===
-                                                "outbound") && (
-                                            <img
-                                                src="/avatar.png"
-                                                alt="avatar"
-                                            />
-                                        )}
-                                    </div>
+                                            {message.sender_type !== "ai" && (
+                                                <img
+                                                    src="/logo.webp"
+                                                    alt="avatar"
+                                                />
+                                            )}
+                                        </div>
+                                    )}
                                     <div className="chat-header mb-1">
                                         <time className="text-xs opacity-50 ml-1">
                                             {formatMessageTime(
