@@ -123,7 +123,7 @@ const ChatContainer = () => {
                                         >
                                             {message.sender_type === "ai" && (
                                                 <img
-                                                    src="/ai-avatar.png"
+                                                    src="/AI-Neo.png"
                                                     alt="avatar"
                                                 />
                                             )}
