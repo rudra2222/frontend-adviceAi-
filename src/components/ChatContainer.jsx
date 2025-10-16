@@ -4,38 +4,38 @@ import { useEffect, useRef } from "react";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
-// import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
+import { X } from "lucide-react";
 
 const ChatContainer = () => {
-    const {
-        messages,
-        getMessages,
-        isMessagesLoading,
-        selectedConversation,
-        // setInterventionToggleDisabled,
-        // subscribeToMessages,
-        // unsubscribeFromMessages,
-    } = useChatStore();
+    const { messages, getMessages, isMessagesLoading, selectedConversation } =
+        useChatStore();
 
-    // const { authUser } = useAuthStore();
     const messageEndRef = useRef(null);
+    const messageRefs = useRef({});
 
     useEffect(() => {
-        getMessages(selectedConversation.id); // later add the lazy loading feature
-    }, [
-        selectedConversation.id,
-        getMessages,
-        // subscribeToMessages,
-        // unsubscribeFromMessages,
-    ]);
+        getMessages(selectedConversation.id);
+    }, [selectedConversation.id, getMessages]);
 
     useEffect(() => {
         if (messageEndRef.current && messages) {
             messageEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [messages]);
+
+    const scrollToMessage = (messageId) => {
+        const element = messageRefs.current[messageId];
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Add a highlight effect
+            element.classList.add("bg-zinc-700/50");
+            setTimeout(() => {
+                element.classList.remove("bg-zinc-700/50");
+            }, 2000);
+        }
+    };
 
     if (isMessagesLoading) {
         return (
@@ -51,6 +51,11 @@ const ChatContainer = () => {
         import.meta.env.MODE === "development"
             ? import.meta.env.VITE_LOCAL_URL
             : import.meta.env.VITE_BACKEND_URL;
+
+    // Find the replied message by ID
+    const findRepliedMessage = (repliedToId) => {
+        return messages.find((msg) => msg.external_id === repliedToId);
+    };
 
     return (
         <div className="flex-1 flex flex-col overflow-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
@@ -71,7 +76,6 @@ const ChatContainer = () => {
                                     message.conversation_id ===
                                     selectedConversation.id
                             )
-                            // Sort messages by timestamp (oldest first)
                             .sort(
                                 (a, b) =>
                                     new Date(a.provider_ts) -
@@ -101,127 +105,132 @@ const ChatContainer = () => {
                                     })()}
                                 </span>
                             </div>
-                            {dayMessages.map((message) => (
-                                <div
-                                    key={message.id}
-                                    className={`chat ${
-                                        message.direction === "outbound"
-                                            ? "chat-end"
-                                            : "chat-start"
-                                    }`}
-                                    ref={messageEndRef}
-                                >
-                                    {message.direction === "outbound" && (
+                            {dayMessages.map((message) => {
+                                const contextObject =
+                                    typeof message.extra_metadata === "string"
+                                        ? JSON.parse(message.extra_metadata)
+                                              ?.context
+                                        : message.extra_metadata?.context;
+                                const repliedMessage = contextObject?.id
+                                    ? findRepliedMessage(contextObject?.id)
+                                    : null;
+
+                                return (
+                                    <div
+                                        key={message.id}
+                                        ref={(el) =>
+                                            (messageRefs.current[
+                                                message.external_id
+                                            ] = el)
+                                        }
+                                        className={`chat ${
+                                            message.direction === "outbound"
+                                                ? "chat-end"
+                                                : "chat-start"
+                                        } transition-colors duration-500`}
+                                    >
+                                        {message.direction === "outbound" && (
+                                            <div
+                                                className={`chat-image avatar size-10 rounded-full border bg-black flex justify-center items-center ${
+                                                    message.direction ===
+                                                        "inbound" &&
+                                                    profilePicColors(
+                                                        selectedConversation.name
+                                                    )
+                                                }`}
+                                            >
+                                                {message.sender_type ===
+                                                    "ai" && (
+                                                    <img
+                                                        src="/AI-Neo-2.png"
+                                                        alt="avatar"
+                                                    />
+                                                )}
+
+                                                {message.sender_type !==
+                                                    "ai" && (
+                                                    <img
+                                                        src="/logo.webp"
+                                                        alt="avatar"
+                                                    />
+                                                )}
+                                            </div>
+                                        )}
+                                        <div className="chat-header mb-1">
+                                            <time className="text-xs opacity-50 ml-1">
+                                                {formatMessageTime(
+                                                    message.provider_ts
+                                                )}
+                                            </time>
+                                        </div>
                                         <div
-                                            className={`chat-image avatar size-10 rounded-full border bg-black flex justify-center items-center ${
-                                                message.direction ===
-                                                    "inbound" &&
-                                                profilePicColors(
-                                                    selectedConversation.name
-                                                )
-                                            }`}
+                                            className={`chat-bubble flex flex-col rounded-2xl ${
+                                                message.direction === "outbound"
+                                                    ? ""
+                                                    : "bg-zinc-800 text-white"
+                                            } px-4 py-2`}
                                         >
-                                            {message.sender_type === "ai" && (
-                                                <img
-                                                    src="/AI-Neo-2.png"
-                                                    alt="avatar"
-                                                />
+                                            {/* Reply Preview Box */}
+                                            {repliedMessage && (
+                                                <div
+                                                    onClick={() =>
+                                                        scrollToMessage(
+                                                            contextObject?.id
+                                                        )
+                                                    }
+                                                    className="bg-zinc-900/50 border-l-4 border-blue-500 rounded px-3 py-2 mb-2 cursor-pointer hover:bg-zinc-900/70 transition-colors"
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-xs font-semibold text-blue-400 mb-1">
+                                                                {repliedMessage.sender_type ===
+                                                                    "customer" &&
+                                                                    (selectedConversation.name ||
+                                                                        "User")}
+                                                                {repliedMessage.sender_type ===
+                                                                    "ai" &&
+                                                                    "AI"}
+                                                                {repliedMessage.sender_type ===
+                                                                    "operator" &&
+                                                                    "You"}
+                                                            </p>
+                                                            <p className="text-sm text-gray-300 truncate">
+                                                                {repliedMessage.has_text
+                                                                    ? repliedMessage.message_text
+                                                                    : JSON.parse(
+                                                                          repliedMessage.media_info
+                                                                      )?.mime_type?.startsWith(
+                                                                          "image/"
+                                                                      )
+                                                                    ? "📷 Image"
+                                                                    : JSON.parse(
+                                                                          repliedMessage.media_info
+                                                                      )?.mime_type?.startsWith(
+                                                                          "video/"
+                                                                      )
+                                                                    ? "🎥 Video"
+                                                                    : JSON.parse(
+                                                                          repliedMessage.media_info
+                                                                      )?.mime_type?.startsWith(
+                                                                          "audio/"
+                                                                      )
+                                                                    ? "🎵 Audio"
+                                                                    : "Media"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             )}
 
-                                            {message.sender_type !== "ai" && (
-                                                <img
-                                                    src="/logo.webp"
-                                                    alt="avatar"
-                                                />
-                                            )}
-                                        </div>
-                                    )}
-                                    <div className="chat-header mb-1">
-                                        <time className="text-xs opacity-50 ml-1">
-                                            {formatMessageTime(
-                                                message.provider_ts
-                                            )}
-                                        </time>
-                                    </div>
-                                    <div
-                                        className={`chat-bubble flex flex-col rounded-2xl ${
-                                            message.direction === "outbound"
-                                                ? ""
-                                                : "bg-zinc-800 text-white"
-                                        } px-4 py-2`}
-                                    >
-                                        {JSON.parse(message.media_info)?.id !==
-                                            null &&
-                                            JSON.parse(
-                                                message.media_info
-                                            )?.mime_type?.startsWith(
-                                                "image/"
-                                            ) && (
-                                                <img
-                                                    src={`${BACKEND_URL}/api/v1/get-media?id=${
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.id
-                                                    }&type=${
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.mime_type
-                                                    }`}
-                                                    alt={
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.description?.length >
-                                                        0
-                                                            ? JSON.parse(
-                                                                  message.media_info
-                                                              )?.description
-                                                            : "Image"
-                                                    }
-                                                    className="sm:max-w-[200px] rounded-md mb-2"
-                                                    loading="lazy"
-                                                />
-                                            )}
-                                        {JSON.parse(message.media_info)?.id !==
-                                            null &&
-                                            JSON.parse(
-                                                message.media_info
-                                            )?.mime_type?.startsWith(
-                                                "video/"
-                                            ) && (
-                                                <video
-                                                    src={`${BACKEND_URL}/api/v1/get-media?id=${
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.id
-                                                    }&type=${
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.mime_type
-                                                    }`}
-                                                    alt={
-                                                        JSON.parse(
-                                                            message.media_info
-                                                        )?.description?.length >
-                                                        0
-                                                            ? JSON.parse(
-                                                                  message.media_info
-                                                              )?.description
-                                                            : "Video"
-                                                    }
-                                                    className="sm:max-w-[200px] rounded-md mb-2"
-                                                    controls
-                                                    preload="auto"
-                                                />
-                                            )}
-                                        {JSON.parse(message.media_info)?.id !==
-                                            null &&
-                                            JSON.parse(
-                                                message.media_info
-                                            )?.mime_type?.startsWith(
-                                                "audio/"
-                                            ) && (
-                                                <audio controls>
-                                                    <source
+                                            {/* Media Content */}
+                                            {JSON.parse(message.media_info)
+                                                ?.id !== null &&
+                                                JSON.parse(
+                                                    message.media_info
+                                                )?.mime_type?.startsWith(
+                                                    "image/"
+                                                ) && (
+                                                    <img
                                                         src={`${BACKEND_URL}/api/v1/get-media?id=${
                                                             JSON.parse(
                                                                 message.media_info
@@ -231,25 +240,91 @@ const ChatContainer = () => {
                                                                 message.media_info
                                                             )?.mime_type
                                                         }`}
-                                                        type={
+                                                        alt={
+                                                            JSON.parse(
+                                                                message.media_info
+                                                            )?.description
+                                                                ?.length > 0
+                                                                ? JSON.parse(
+                                                                      message.media_info
+                                                                  )?.description
+                                                                : "Image"
+                                                        }
+                                                        className="sm:max-w-[200px] rounded-md mb-2"
+                                                        loading="lazy"
+                                                    />
+                                                )}
+                                            {JSON.parse(message.media_info)
+                                                ?.id !== null &&
+                                                JSON.parse(
+                                                    message.media_info
+                                                )?.mime_type?.startsWith(
+                                                    "video/"
+                                                ) && (
+                                                    <video
+                                                        src={`${BACKEND_URL}/api/v1/get-media?id=${
+                                                            JSON.parse(
+                                                                message.media_info
+                                                            )?.id
+                                                        }&type=${
                                                             JSON.parse(
                                                                 message.media_info
                                                             )?.mime_type
+                                                        }`}
+                                                        alt={
+                                                            JSON.parse(
+                                                                message.media_info
+                                                            )?.description
+                                                                ?.length > 0
+                                                                ? JSON.parse(
+                                                                      message.media_info
+                                                                  )?.description
+                                                                : "Video"
                                                         }
                                                         className="sm:max-w-[200px] rounded-md mb-2"
+                                                        controls
+                                                        preload="auto"
                                                     />
-                                                </audio>
+                                                )}
+                                            {JSON.parse(message.media_info)
+                                                ?.id !== null &&
+                                                JSON.parse(
+                                                    message.media_info
+                                                )?.mime_type?.startsWith(
+                                                    "audio/"
+                                                ) && (
+                                                    <audio controls>
+                                                        <source
+                                                            src={`${BACKEND_URL}/api/v1/get-media?id=${
+                                                                JSON.parse(
+                                                                    message.media_info
+                                                                )?.id
+                                                            }&type=${
+                                                                JSON.parse(
+                                                                    message.media_info
+                                                                )?.mime_type
+                                                            }`}
+                                                            type={
+                                                                JSON.parse(
+                                                                    message.media_info
+                                                                )?.mime_type
+                                                            }
+                                                            className="sm:max-w-[200px] rounded-md mb-2"
+                                                        />
+                                                    </audio>
+                                                )}
+                                            {message.has_text && (
+                                                <p className="whitespace-pre-wrap">
+                                                    {message.message_text}
+                                                </p>
                                             )}
-                                        {message.has_text && (
-                                            <p className="whitespace-pre-wrap">
-                                                {message.message_text}
-                                            </p>
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ))}
+                    <div ref={messageEndRef} />
                 </div>
             )}
 
