@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
-import { Paperclip, Send, File, X } from "lucide-react";
+import { Paperclip, Send, File, X, Clock } from "lucide-react";
 import toast from "react-hot-toast";
 import QuickReplyAutocomplete from "./QuickReplyAutocomplete";
 
@@ -12,13 +12,32 @@ const MessageInput = () => {
     const fileRef = useRef(null);
 
     const fileInputRef = useRef(null);
-    const { sendMessage, isHumanInterventionActive } = useChatStore();
+    const { sendMessage, isHumanInterventionActive, messages } = useChatStore();
 
     // Quick Reply states
     const [showQuickReply, setShowQuickReply] = useState(false);
     const [quickReplyQuery, setQuickReplyQuery] = useState("");
     const [slashPosition, setSlashPosition] = useState(-1);
     const textareaRef = useRef();
+
+    // Check if message window is expired (24 hours)
+    const isMessageWindowExpired = () => {
+        if (!messages || messages.length === 0) return false;
+
+        // Find the last inbound message (direction: "inbound")
+        const inboundMessages = messages.filter(msg => msg.direction === "inbound");
+        
+        if (inboundMessages.length === 0) return false;
+
+        const lastInboundMessage = inboundMessages[inboundMessages.length - 1];
+        const lastInboundTime = new Date(lastInboundMessage.provider_ts);
+        const currentTime = new Date();
+        const hoursDifference = (currentTime - lastInboundTime) / (1000 * 60 * 60);
+
+        return hoursDifference >= 24;
+    };
+
+    const windowExpired = isMessageWindowExpired();
 
     // Auto-resize textarea based on content (WhatsApp-style)
     const adjustTextareaHeight = () => {
@@ -39,6 +58,8 @@ const MessageInput = () => {
     }, [text]);
 
     const handleFileChange = (e) => {
+        if (windowExpired) return;
+
         let file = e.target.files[0];
         const FILE_SIZE_LIMIT = 15; // in MB
         if (file.size > FILE_SIZE_LIMIT * 1024 * 1024) {
@@ -82,6 +103,7 @@ const MessageInput = () => {
 
     const handleSendMessage = (e) => {
         e.preventDefault();
+        if (windowExpired) return;
         if (!text.length > 0 && !filePreview) return;
 
         try {
@@ -149,6 +171,8 @@ const MessageInput = () => {
     };
 
     const handleTextChange = (e) => {
+        if (windowExpired) return;
+
         const newText = e.target.value;
         const cursorPos = e.target.selectionStart;
         setText(newText);
@@ -232,7 +256,7 @@ const MessageInput = () => {
     return (
         <div className="p-4 w-full relative">
             {/* Quick Reply Autocomplete */}
-            {showQuickReply && (
+            {showQuickReply && !windowExpired && (
                 <div className="quick-reply-dropdown">
                     <QuickReplyAutocomplete
                         inputRef={textareaRef}
@@ -244,6 +268,21 @@ const MessageInput = () => {
                 </div>
             )}
 
+            {/* 24-hour Window Expired Overlay */}
+            {windowExpired && (
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+                    <div className="bg-base-200 px-6 py-4 rounded-lg shadow-lg border border-zinc-700 flex items-center gap-3 max-w-md mx-4">
+                        <Clock className="text-orange-500 flex-shrink-0" size={24} />
+                        <div>
+                            <p className="text-sm font-semibold text-white">Message window closed</p>
+                            <p className="text-xs text-zinc-400 mt-1">
+                                The 24-hour message window has expired. Wait for the customer to send a new message.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {filePreview && (
                 <div className="mb-3 flex items-center gap-2">
                     <div className="relative">
@@ -252,6 +291,7 @@ const MessageInput = () => {
                             onClick={removeFile}
                             className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center"
                             type="button"
+                            disabled={windowExpired}
                         >
                             <X className="size-3" />
                         </button>
@@ -264,22 +304,23 @@ const MessageInput = () => {
                     <textarea
                         ref={textareaRef}
                         rows={1}
-                        className="w-full p-3 rounded-lg bg-base-200 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-y-auto transition-all duration-100 ease-out scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent"
+                        className="w-full p-3 rounded-lg bg-base-200 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-y-auto transition-all duration-100 ease-out scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
                             minHeight: "44px",
                             maxHeight: "120px",
                             lineHeight: "1.5",
                         }}
-                        placeholder="Type a message..."
+                        placeholder={windowExpired ? "Message window closed" : "Type a message..."}
                         value={text}
                         onChange={handleTextChange}
                         onKeyDown={(e) => {
                             // Send on Enter (without Shift)
-                            if (e.key === "Enter" && !e.shiftKey) {
+                            if (e.key === "Enter" && !e.shiftKey && !windowExpired) {
                                 e.preventDefault();
                                 handleSendMessage(e);
                             }
                         }}
+                        disabled={windowExpired}
                     />
                     <input
                         type="file"
@@ -287,26 +328,29 @@ const MessageInput = () => {
                         className="hidden"
                         ref={fileInputRef}
                         onChange={handleFileChange}
+                        disabled={windowExpired}
                     />
 
                     <button
                         type="button"
                         className={`hidden sm:flex btn btn-circle ${
                             filePreview ? "text-emerald-500" : "text-zinc-400"
-                        }`}
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                         onClick={() => fileInputRef.current?.click()}
-                        title="Attach File"
+                        title={windowExpired ? "Message window closed" : "Attach File"}
+                        disabled={windowExpired}
                     >
                         <Paperclip size={20} />
                     </button>
                 </div>
                 <button
                     type="submit"
-                    className="btn btn-md btn-circle"
-                    title="Send Message"
+                    className="btn btn-md btn-circle disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={windowExpired ? "Message window closed" : "Send Message"}
                     disabled={
                         (!text.length > 0 && !filePreview) ||
-                        !isHumanInterventionActive
+                        !isHumanInterventionActive ||
+                        windowExpired
                     }
                 >
                     <Send size={22} />
