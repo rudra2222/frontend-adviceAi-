@@ -110,16 +110,23 @@ const AppSidebar = () => {
                         </button>
                     </div>
                 ) : (
-                    // Collapsed: Only show toggle button centered at the top
-                    <button
-                        onClick={toggleSidebar}
-                        className="flex items-center justify-center w-9 h-9 rounded-lg border border-white/10 bg-white/5 text-zinc-400 transition-all duration-200 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
-                        aria-label={
-                            open ? "Collapse sidebar" : "Expand sidebar"
-                        }
-                    >
-                        <PanelLeft className="w-4 h-4" />
-                    </button>
+                    // Collapsed: Show logo, toggle button appears on hover
+                    <div className="relative flex items-center justify-center w-full">
+                        <div className="group/logo relative flex items-center justify-center cursor-pointer">
+                            <img
+                                src="/favicon.jpeg"
+                                alt="Advise AI"
+                                className="w-8 h-8 object-contain rounded transition-opacity duration-200 group-hover/logo:opacity-0"
+                            />
+                            <button
+                                onClick={toggleSidebar}
+                                className="absolute flex items-center justify-center w-9 h-9 rounded-lg border border-white/10 bg-white/5 text-zinc-400 transition-all duration-200 opacity-0 group-hover/logo:opacity-100 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+                                aria-label="Expand sidebar"
+                            >
+                                <PanelLeft className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
                 )}
             </SidebarHeader>
 
