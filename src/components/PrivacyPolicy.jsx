@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 const PrivacyPolicy = ({ onBack }) => {
     return (
-        <div className="flex-1 bg-zinc-950 overflow-hidden flex flex-col pt-16">
+        <div className="flex-1 bg-zinc-950 overflow-hidden flex flex-col">
             {/* Header */}
             <div className="bg-zinc-900 border-b border-zinc-800">
                 <div className="flex items-center gap-4 px-6 py-4">

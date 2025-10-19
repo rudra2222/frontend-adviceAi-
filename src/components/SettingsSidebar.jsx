@@ -120,7 +120,7 @@ const SettingsSidebar = ({ onNavigate }) => {
 
     return (
         <aside
-            className="h-screen w-[400px] bg-zinc-950 flex flex-col pt-16"
+            className="h-screen w-[400px] bg-zinc-950 flex flex-col"
             style={{ minWidth: 400 }}
         >
             {/* Top Heading */}

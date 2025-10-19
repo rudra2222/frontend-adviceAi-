@@ -94,7 +94,7 @@ const LabelsManagement = ({ onBack }) => {
     };
 
     return (
-        <div className="flex-1 flex flex-col bg-zinc-900 pt-16">
+        <div className="flex-1 flex flex-col bg-zinc-900">
             {/* Header */}
             <div className="px-6 py-4 border-b border-zinc-800 flex items-center gap-4">
                 <button
