@@ -9,7 +9,7 @@ function SettingsPage() {
     const [currentView, setCurrentView] = useState("menu"); // "menu" | "business" | "help" | "labels"
 
     return (
-        <div className="flex h-screen bg-zinc-900">
+        <div className="flex h-screen bg-zinc-900 overflow-hidden">
             <div className="relative">
                 <SettingsSidebar onNavigate={setCurrentView} />
                 {/* Vertical separator with subtle highlight */}
@@ -28,7 +28,7 @@ function SettingsPage() {
                 <PrivacyPolicy onBack={() => setCurrentView("menu")} />
             )}
             {currentView === "menu" && (
-                <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 gap-4 pt-16">
+                <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 gap-4">
                     <Settings className="w-24 h-24 text-zinc-600" />
                     <p className="text-lg">Select a setting to configure</p>
                 </div>
