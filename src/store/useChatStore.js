@@ -158,9 +158,11 @@ export const useChatStore = create((set, get) => ({
                 get().getConversation(newMessage.conversation_id);
             }
 
-            set({
-                messages: [...get().messages, newMessage],
-            });
+            if (get().selectedConversation?.id === newMessage.conversation_id) {
+                set({
+                    messages: [...get().messages, newMessage],
+                });
+            }
 
             // Move the conversation to the top and update last_message
             const conversations = get().conversations || [];

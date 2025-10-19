@@ -6,7 +6,6 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
-import { X } from "lucide-react";
 
 const ChatContainer = () => {
     const { messages, getMessages, isMessagesLoading, selectedConversation } =
