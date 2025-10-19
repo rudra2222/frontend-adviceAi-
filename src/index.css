@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:ital,wght@0,200..800;1,200..800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,4 +45,91 @@
 }
 .labels-scrollbar:hover {
     scrollbar-color: rgba(60, 60, 60, 0.7) #232323;
+}
+
+@layer base {
+    :root {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 160 84% 39%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 14.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 160 84% 39%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 14.9%;
+        --input: 0 0% 14.9%;
+        --ring: 160 84% 39%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+        --radius: 0.5rem;
+        --sidebar-background: 160 10% 12%;
+        --sidebar-foreground: 160 15% 90%;
+        --sidebar-primary: 160 84% 39%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 160 8% 18%;
+        --sidebar-accent-foreground: 160 20% 85%;
+        --sidebar-border: 160 8% 22%;
+        --sidebar-ring: 160 84% 39%;
+    }
+    .dark {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 160 84% 39%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 14.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 160 84% 39%;
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 14.9%;
+        --input: 0 0% 14.9%;
+        --ring: 160 84% 39%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+        --sidebar-background: 160 10% 12%;
+        --sidebar-foreground: 160 15% 90%;
+        --sidebar-primary: 160 84% 39%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 160 8% 18%;
+        --sidebar-accent-foreground: 160 20% 85%;
+        --sidebar-border: 160 8% 22%;
+        --sidebar-ring: 160 84% 39%;
+    }
+}
+
+/* AppSidebar font family */
+[data-sidebar="sidebar"],
+[data-sidebar="sidebar"] * {
+    font-family: "Bricolage Grotesque", sans-serif;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
 }
