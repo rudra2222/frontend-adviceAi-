@@ -8,6 +8,8 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
+import DashboardPage from "./pages/DashboardPage";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 import Navbar from "./components/Navbar";
 
@@ -15,6 +17,21 @@ import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
 import { QuickRepliesProvider } from "./context/QuickRepliesContext";
 
+/**
+ * App Component
+ *
+ * Root component with routing logic.
+ *
+ * Architecture:
+ * - Auth pages (Login/SignUp): Standalone with Navbar
+ * - Authenticated pages: Wrapped in DashboardLayout with AppSidebar
+ * - All chat functionality preserved in HomePage
+ *
+ * Migration Notes:
+ * - Navbar only shown on auth pages
+ * - DashboardLayout provides sidebar for authenticated routes
+ * - All existing features maintained
+ */
 const App = () => {
     const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
     const { theme } = useThemeStore();
@@ -34,47 +51,50 @@ const App = () => {
     return (
         <QuickRepliesProvider>
             <div data-theme={theme}>
-                <Navbar />
-
                 <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            authUser ? <HomePage /> : <Navigate to="/login" />
-                        }
-                    />
+                    {/* Public Routes - Auth pages with Navbar */}
                     <Route
                         path="/signup"
                         element={
-                            !authUser ? <SignUpPage /> : <Navigate to="/" />
+                            !authUser ? (
+                                <>
+                                    <Navbar />
+                                    <SignUpPage />
+                                </>
+                            ) : (
+                                <Navigate to="/" />
+                            )
                         }
                     />
                     <Route
                         path="/login"
                         element={
-                            !authUser ? <LoginPage /> : <Navigate to="/" />
+                            !authUser ? (
+                                <>
+                                    <Navbar />
+                                    <LoginPage />
+                                </>
+                            ) : (
+                                <Navigate to="/" />
+                            )
                         }
                     />
+
+                    {/* Protected Routes - Wrapped in DashboardLayout */}
                     <Route
-                        path="/settings"
                         element={
                             authUser ? (
-                                <SettingsPage />
+                                <DashboardLayout />
                             ) : (
                                 <Navigate to="/login" />
                             )
                         }
-                    />
-                    <Route
-                        path="/profile"
-                        element={
-                            authUser ? (
-                                <ProfilePage />
-                            ) : (
-                                <Navigate to="/login" />
-                            )
-                        }
-                    />
+                    >
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
+                        <Route path="/profile" element={<ProfilePage />} />
+                    </Route>
 
                     {/* Catch-all route for unknown paths */}
                     <Route
