@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 // import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
-import TakeoverToggleButton from "../custom/TakeoverToggleButton";
+import TakeoverToggleButton from "./TakeoverToggleButton";
 import profilePicColors from "../lib/profilePicColors.js";
 import { useEffect } from "react";
 

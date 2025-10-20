@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Settings } from "lucide-react";
 import SettingsSidebar from "../components/SettingsSidebar";
 import QuickRepliesSettings from "../components/QuickRepliesSettings";
-import PrivacyPolicy from "../components/PrivacyPolicy";
+import PrivacyPolicy from "./PrivacyPolicy";
 import LabelsManagement from "../components/LabelsManagement";
 
 function SettingsPage() {

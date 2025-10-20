@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Users, TrendingUp, Activity } from "lucide-react";
 import { useChatStore } from "@/store/useChatStore";
 import { useAuthStore } from "@/store/useAuthStore";
-import Overlay from "../components/Overlay.jsx";
+import Overlay from "../components/util/Overlay.jsx";
 
 /**
  * DashboardPage Component
