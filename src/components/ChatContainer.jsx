@@ -142,16 +142,17 @@ const ChatContainer = () => {
                                                 {message.sender_type ===
                                                     "ai" && (
                                                     <img
-                                                        src="/AI-Neo-2.png"
+                                                        src="/AI-Neo.png"
                                                         alt="avatar"
+                                                        className="rounded-full object-cover w-full h-full"
                                                     />
                                                 )}
-
                                                 {message.sender_type !==
                                                     "ai" && (
                                                     <img
                                                         src="/logo.webp"
                                                         alt="avatar"
+                                                        className="rounded-full object-cover w-full h-full"
                                                     />
                                                 )}
                                             </div>
