@@ -25,14 +25,17 @@ const MessageInput = () => {
         if (!messages || messages.length === 0) return false;
 
         // Find the last inbound message (direction: "inbound")
-        const inboundMessages = messages.filter(msg => msg.direction === "inbound");
-        
+        const inboundMessages = messages.filter(
+            (msg) => msg.direction === "inbound"
+        );
+
         if (inboundMessages.length === 0) return false;
 
         const lastInboundMessage = inboundMessages[inboundMessages.length - 1];
         const lastInboundTime = new Date(lastInboundMessage.provider_ts);
         const currentTime = new Date();
-        const hoursDifference = (currentTime - lastInboundTime) / (1000 * 60 * 60);
+        const hoursDifference =
+            (currentTime - lastInboundTime) / (1000 * 60 * 60);
 
         return hoursDifference >= 24;
     };
@@ -104,6 +107,12 @@ const MessageInput = () => {
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (windowExpired) return;
+        if (!isHumanInterventionActive) {
+            toast.error(
+                "Human intervention is not active.\nCannot send message."
+            );
+            return;
+        }
         if (!text.length > 0 && !filePreview) return;
 
         try {
@@ -272,11 +281,17 @@ const MessageInput = () => {
             {windowExpired && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
                     <div className="bg-base-200 px-6 py-4 rounded-lg shadow-lg border border-zinc-700 flex items-center gap-3 max-w-md mx-4">
-                        <Clock className="text-orange-500 flex-shrink-0" size={24} />
+                        <Clock
+                            className="text-orange-500 flex-shrink-0"
+                            size={24}
+                        />
                         <div>
-                            <p className="text-sm font-semibold text-white">Message window closed</p>
+                            <p className="text-sm font-semibold text-white">
+                                Message window closed
+                            </p>
                             <p className="text-xs text-zinc-400 mt-1">
-                                The 24-hour message window has expired. Wait for the customer to send a new message.
+                                The 24-hour message window has expired. Wait for
+                                the customer to send a new message.
                             </p>
                         </div>
                     </div>
@@ -310,12 +325,20 @@ const MessageInput = () => {
                             maxHeight: "120px",
                             lineHeight: "1.5",
                         }}
-                        placeholder={windowExpired ? "Message window closed" : "Type a message..."}
+                        placeholder={
+                            windowExpired
+                                ? "Message window closed"
+                                : "Type a message..."
+                        }
                         value={text}
                         onChange={handleTextChange}
                         onKeyDown={(e) => {
                             // Send on Enter (without Shift)
-                            if (e.key === "Enter" && !e.shiftKey && !windowExpired) {
+                            if (
+                                e.key === "Enter" &&
+                                !e.shiftKey &&
+                                !windowExpired
+                            ) {
                                 e.preventDefault();
                                 handleSendMessage(e);
                             }
@@ -337,7 +360,11 @@ const MessageInput = () => {
                             filePreview ? "text-emerald-500" : "text-zinc-400"
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                         onClick={() => fileInputRef.current?.click()}
-                        title={windowExpired ? "Message window closed" : "Attach File"}
+                        title={
+                            windowExpired
+                                ? "Message window closed"
+                                : "Attach File"
+                        }
                         disabled={windowExpired}
                     >
                         <Paperclip size={20} />
@@ -346,7 +373,9 @@ const MessageInput = () => {
                 <button
                     type="submit"
                     className="btn btn-md btn-circle disabled:opacity-50 disabled:cursor-not-allowed"
-                    title={windowExpired ? "Message window closed" : "Send Message"}
+                    title={
+                        windowExpired ? "Message window closed" : "Send Message"
+                    }
                     disabled={
                         (!text.length > 0 && !filePreview) ||
                         !isHumanInterventionActive ||
