@@ -6,6 +6,7 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
+import { LinkifiedText } from "./util/LinkifiedText";
 
 const ChatContainer = () => {
     const { messages, getMessages, isMessagesLoading, selectedConversation } =
@@ -313,9 +314,9 @@ const ChatContainer = () => {
                                                     </audio>
                                                 )}
                                             {message.has_text && (
-                                                <p className="whitespace-pre-wrap">
-                                                    {message.message_text}
-                                                </p>
+                                                <LinkifiedText
+                                                    text={message.message_text}
+                                                />
                                             )}
                                         </div>
                                     </div>
