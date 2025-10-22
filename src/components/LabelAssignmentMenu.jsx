@@ -142,7 +142,8 @@ const LabelAssignmentMenu = ({
     if (!isOpen || !conversation) return null;
 
     // Get fresh conversation data from store for instant updates
-    const currentConversation = conversations.find((c) => c.id === conversation.id) || conversation;
+    const currentConversation =
+        conversations.find((c) => c.id === conversation.id) || conversation;
     const conversationLabels = currentConversation.labels || [];
     const isLabelAssigned = (labelId) =>
         conversationLabels.some((l) => l.id === labelId);
@@ -212,11 +213,31 @@ const LabelAssignmentMenu = ({
                                         assigned ? "bg-zinc-800/50" : ""
                                     }`}
                                 >
-                                    {/* Color circle */}
+                                    {/* Sleek tag with pointed right edge and hole */}
                                     <div
-                                        className="w-4 h-4 rounded-full flex-shrink-0 border-2 border-zinc-700"
-                                        style={{ backgroundColor: label.color }}
-                                    />
+                                        className="w-5 h-3.5 flex-shrink-0 relative"
+                                        style={{
+                                            backgroundColor: label.color,
+                                            clipPath:
+                                                "polygon(0% 20%, 5% 0%, 75% 0%, 85% 20%, 100% 50%, 85% 80%, 75% 100%, 5% 100%, 0% 80%)",
+                                            borderRadius: "1px",
+                                        }}
+                                    >
+                                        {/* Hole cutout on pointed edge */}
+                                        <div
+                                            className="absolute"
+                                            style={{
+                                                right: "3px",
+                                                top: "50%",
+                                                transform: "translateY(-50%)",
+                                                width: "2.5px",
+                                                height: "2.5px",
+                                                backgroundColor:
+                                                    "rgb(24 24 27)", // zinc-900 background
+                                                borderRadius: "50%",
+                                            }}
+                                        />
+                                    </div>
 
                                     {/* Label name */}
                                     <span className="flex-1 text-left text-zinc-200 text-sm font-medium truncate">

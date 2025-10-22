@@ -287,16 +287,32 @@ const LabelsManagement = ({ onBack }) => {
                                 ) : (
                                     // View Mode
                                     <div className="flex items-center gap-3">
-                                        {/* Sleek tag shape - professional design */}
+                                        {/* Sleek tag with pointed right edge and hole */}
                                         <div
-                                            className="w-6 h-4 flex-shrink-0"
+                                            className="w-6 h-4 flex-shrink-0 relative"
                                             style={{
                                                 backgroundColor: label.color,
                                                 clipPath:
-                                                    "polygon(0% 15%, 8% 0%, 92% 0%, 100% 15%, 100% 85%, 92% 100%, 8% 100%, 0% 85%, 0% 15%)",
+                                                    "polygon(0% 20%, 5% 0%, 75% 0%, 85% 20%, 100% 50%, 85% 80%, 75% 100%, 5% 100%, 0% 80%)",
                                                 borderRadius: "1px",
                                             }}
-                                        />
+                                        >
+                                            {/* Hole cutout on pointed edge */}
+                                            <div
+                                                className="absolute"
+                                                style={{
+                                                    right: "3.5px",
+                                                    top: "50%",
+                                                    transform:
+                                                        "translateY(-50%)",
+                                                    width: "3px",
+                                                    height: "3px",
+                                                    backgroundColor:
+                                                        "rgb(24 24 27)", // zinc-900 background
+                                                    borderRadius: "50%",
+                                                }}
+                                            />
+                                        </div>
 
                                         {/* Label Name */}
                                         <div className="flex-1">
