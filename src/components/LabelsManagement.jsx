@@ -287,11 +287,14 @@ const LabelsManagement = ({ onBack }) => {
                                 ) : (
                                     // View Mode
                                     <div className="flex items-center gap-3">
-                                        {/* Color Circle */}
+                                        {/* Sleek tag shape - professional design */}
                                         <div
-                                            className="w-5 h-5 rounded-full border-2 border-zinc-600 flex-shrink-0"
+                                            className="w-6 h-4 flex-shrink-0"
                                             style={{
                                                 backgroundColor: label.color,
+                                                clipPath:
+                                                    "polygon(0% 15%, 8% 0%, 92% 0%, 100% 15%, 100% 85%, 92% 100%, 8% 100%, 0% 85%, 0% 15%)",
+                                                borderRadius: "1px",
                                             }}
                                         />
 
