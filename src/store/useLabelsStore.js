@@ -63,7 +63,7 @@ export const useLabelsStore = create((set, get) => ({
             {
                 id: "default-2",
                 name: "New order",
-                color: LABEL_COLORS[5].hex,
+                color: "#16C47F",
                 isDefault: true,
             },
             {
@@ -75,13 +75,13 @@ export const useLabelsStore = create((set, get) => ({
             {
                 id: "default-4",
                 name: "Paid",
-                color: LABEL_COLORS[5].hex,
+                color: "#E45A92",
                 isDefault: true,
             },
             {
                 id: "default-5",
                 name: "Order complete",
-                color: LABEL_COLORS[5].hex,
+                color: "#F9CB99",
                 isDefault: true,
             },
             {
