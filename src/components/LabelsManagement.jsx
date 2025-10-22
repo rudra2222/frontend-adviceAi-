@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Edit2, Trash2, Check, X } from "lucide-react";
 import { useLabelsStore } from "../store/useLabelsStore";
 import { LABEL_COLORS, MAX_LABELS } from "../constants";
+import ConfirmModal from "./ui/ConfirmModal";
 
 /**
  * LabelsManagement Component
@@ -86,11 +87,27 @@ const LabelsManagement = ({ onBack }) => {
         setEditLabelColor("");
     };
 
-    // Handle delete label
-    const handleDeleteLabel = async (labelId) => {
-        if (window.confirm("Are you sure you want to delete this label?")) {
-            await deleteLabel(labelId);
+    // Confirm modal state for deletions
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
+    // Handle delete label (open confirm modal)
+    const handleDeleteLabel = (labelId) => {
+        setPendingDeleteId(labelId);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (pendingDeleteId) {
+            await deleteLabel(pendingDeleteId);
+            setPendingDeleteId(null);
         }
+        setConfirmOpen(false);
+    };
+
+    const handleCancelDelete = () => {
+        setPendingDeleteId(null);
+        setConfirmOpen(false);
     };
 
     return (
@@ -364,6 +381,15 @@ const LabelsManagement = ({ onBack }) => {
                     </div>
                 )}
             </div>
+
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                open={confirmOpen}
+                title="Delete label"
+                description="This will permanently delete the label and remove it from all conversations. Are you sure?"
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+            />
         </div>
     );
 };
