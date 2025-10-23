@@ -142,7 +142,9 @@ const SettingsSidebar = ({ onNavigate }) => {
                         itemsToRender.map((item) => (
                             <SettingsMenuItem
                                 key={item.key}
-                                {...item}
+                                icon={item.icon}
+                                title={item.title}
+                                subtitle={item.subtitle}
                                 onClick={() => handleMenuClick(item.key)}
                             />
                         ))
