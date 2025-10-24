@@ -233,6 +233,8 @@ export const useChatStore = create((set, get) => ({
     setSelectedConversation: (selectedConversation) =>
         set({ selectedConversation }),
 
+    setConversations: (conversations) => set({ conversations }),
+
     setInterventionToggleDisabled: (interventionToggleDisabled) =>
         set({ interventionToggleDisabled }),
 
@@ -240,7 +242,6 @@ export const useChatStore = create((set, get) => ({
         set({ isHumanInterventionActive }),
 
     // ==================== CRITICAL LABEL LOGIC START ====================
-    // TODO: To restore previous state, remove everything between these markers
 
     // Add conversation to critical list when takeover is activated
     addToCriticalConversations: (conversationId) => {
@@ -272,79 +273,6 @@ export const useChatStore = create((set, get) => ({
     },
 
     // ==================== CRITICAL LABEL LOGIC END ====================
-
-    // ==================== LABEL ASSIGNMENT LOGIC START ====================
-    // TODO: Database migration needed - add conversation_labels junction table
-    // See useLabelsStore.js for complete database schema
-
-    // Assign label to conversation
-    assignLabelToConversation: (conversationId, label) => {
-        const conversations = get().conversations;
-        const selectedConversation = get().selectedConversation;
-
-        const updatedConversations = conversations.map((conv) => {
-            if (conv.id === conversationId) {
-                const existingLabels = conv.labels || [];
-                // Check if label already assigned
-                if (existingLabels.some((l) => l.id === label.id)) {
-                    return conv;
-                }
-                // Add new label
-                const updatedConv = {
-                    ...conv,
-                    labels: [...existingLabels, label],
-                };
-
-                // Update selected conversation if it's the same one
-                if (selectedConversation?.id === conversationId) {
-                    set({ selectedConversation: updatedConv });
-                }
-
-                return updatedConv;
-            }
-            return conv;
-        });
-
-        set({ conversations: updatedConversations });
-
-        // TODO: Call API to persist label assignment
-        // await axiosInstance.post(`/conversations/${conversationId}/labels`, {
-        //     labelId: label.id,
-        // });
-    },
-
-    // Remove label from conversation
-    removeLabelFromConversation: (conversationId, labelId) => {
-        const conversations = get().conversations;
-        const selectedConversation = get().selectedConversation;
-
-        const updatedConversations = conversations.map((conv) => {
-            if (conv.id === conversationId) {
-                const existingLabels = conv.labels || [];
-                const updatedConv = {
-                    ...conv,
-                    labels: existingLabels.filter((l) => l.id !== labelId),
-                };
-
-                // Update selected conversation if it's the same one
-                if (selectedConversation?.id === conversationId) {
-                    set({ selectedConversation: updatedConv });
-                }
-
-                return updatedConv;
-            }
-            return conv;
-        });
-
-        set({ conversations: updatedConversations });
-
-        // TODO: Call API to remove label assignment
-        // await axiosInstance.delete(
-        //     `/conversations/${conversationId}/labels/${labelId}`
-        // );
-    },
-
-    // ==================== LABEL ASSIGNMENT LOGIC END ====================
 
     takeover: async () => {
         try {

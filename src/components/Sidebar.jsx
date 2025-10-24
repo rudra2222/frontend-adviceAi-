@@ -16,6 +16,7 @@ import LabelDropdown from "./LabelDropdown";
 import LabelAssignmentMenu from "./LabelAssignmentMenu";
 import LabelIcon from "./LabelIcon";
 import { useLabelsStore } from "../store/useLabelsStore";
+import { useConversationLabelActions } from "../store/useConversationLabelActions";
 
 /**
  * Renders appropriate icon based on media MIME type
@@ -46,12 +47,17 @@ const Sidebar = () => {
         selectedConversation,
         setSelectedConversation,
         isConversationsLoading,
-        assignLabelToConversation,
-        removeLabelFromConversation,
     } = useChatStore();
 
-    const { labels, getLabels, selectedLabelFilter, setSelectedLabelFilter } =
-        useLabelsStore();
+    const {
+        labels,
+        initializeLabels,
+        selectedLabelFilter,
+        setSelectedLabelFilter,
+    } = useLabelsStore();
+
+    const { assignLabelToConversation, removeLabelFromConversation } =
+        useConversationLabelActions();
 
     // State for search query
     const [searchQuery, setSearchQuery] = useState("");
@@ -64,9 +70,12 @@ const Sidebar = () => {
 
     // Load conversations and labels on mount
     useEffect(() => {
-        getInitialConversations();
-        getLabels();
-    }, [getInitialConversations, getLabels]);
+        const loadData = async () => {
+            await getInitialConversations();
+            await initializeLabels();
+        };
+        loadData();
+    }, [getInitialConversations, initializeLabels]);
 
     // Handle right-click on conversation to show label assignment menu
     const handleContextMenu = (e, conversation) => {
