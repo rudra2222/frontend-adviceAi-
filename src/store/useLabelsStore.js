@@ -2,47 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { LABEL_COLORS, MAX_LABELS } from "../constants";
-
-/**
- * DATABASE MIGRATION NOTES:
- * ========================
- *
- * 1. Create 'labels' table:
- *    - id (primary key, auto-increment)
- *    - name (varchar, required, max 50 chars)
- *    - color (varchar, hex color code, required)
- *    - workspace_id (foreign key to workspaces table)
- *    - created_at (timestamp)
- *    - updated_at (timestamp)
- *    - position (integer, for ordering labels)
- *
- * 2. Create 'conversation_labels' junction table (many-to-many):
- *    - id (primary key, auto-increment)
- *    - conversation_id (foreign key to conversations table)
- *    - label_id (foreign key to labels table)
- *    - created_at (timestamp)
- *    - UNIQUE constraint on (conversation_id, label_id)
- *
- * 3. API Endpoints needed:
- *    - GET    /api/labels                     - Get all labels
- *    - POST   /api/labels                     - Create new label
- *    - PUT    /api/labels/:id                 - Update label
- *    - DELETE /api/labels/:id                 - Delete label
- *    - POST   /api/labels/reorder             - Reorder labels
- *    - POST   /api/conversations/:id/labels   - Assign label to conversation
- *    - DELETE /api/conversations/:id/labels/:labelId - Remove label from conversation
- *
- * 4. Predefined labels to seed in database:
- *    These 8 default labels should be created for each new workspace:
- *    - "New customer" (Blue)
- *    - "New order" (Green)
- *    - "Pending payment" (Yellow)
- *    - "Paid" (Green)
- *    - "Order complete" (Green)
- *    - "To do" (Orange)
- *    - "Important" (Red)
- *    - "Follow up" (Purple)
- */
+import { useChatStore } from "./useChatStore";
 
 export const useLabelsStore = create((set, get) => ({
     // State
@@ -50,72 +10,87 @@ export const useLabelsStore = create((set, get) => ({
     isLabelsLoading: false,
     selectedLabelFilter: "all", // "all" | "critical" | labelId
 
-    // Initialize with default labels (will be replaced by API data)
-    // These are the 8 predefined labels that should exist in the database
-    initializeDefaultLabels: () => {
-        const defaultLabels = [
-            {
-                id: "default-1",
-                name: "New customer",
-                color: LABEL_COLORS[2].hex,
-                isDefault: true,
-            },
-            {
-                id: "default-2",
-                name: "New order",
-                color: "#16C47F",
-                isDefault: true,
-            },
-            {
-                id: "default-3",
-                name: "Pending payment",
-                color: LABEL_COLORS[3].hex,
-                isDefault: true,
-            },
-            {
-                id: "default-4",
-                name: "Paid",
-                color: "#E45A92",
-                isDefault: true,
-            },
-            {
-                id: "default-5",
-                name: "Order complete",
-                color: "#F9CB99",
-                isDefault: true,
-            },
-            {
-                id: "default-6",
-                name: "To do",
-                color: LABEL_COLORS[4].hex,
-                isDefault: true,
-            },
-            {
-                id: "default-7",
-                name: "Important",
-                color: LABEL_COLORS[0].hex,
-                isDefault: true,
-            },
-            {
-                id: "default-8",
-                name: "Follow up",
-                color: LABEL_COLORS[1].hex,
-                isDefault: true,
-            },
-        ];
-        set({ labels: defaultLabels });
+    initializeLabels: async () => {
+        const chatStore = useChatStore.getState();
+        const {
+            conversations,
+            setConversations,
+            setSelectedConversation,
+            selectedConversation,
+        } = chatStore;
+
+        const { getLabels } = get();
+
+        try {
+            // Step 1: Fetch all user labels first (ensures color, name, etc. are synced)
+            await getLabels();
+            set({ selectedLabelFilter: "all" });
+
+            // Step 2: Fetch all assigned conversation labels from the backend
+            const res = await axiosInstance.get("/conversation-label/labels");
+            const conversationLabels = res.data?.labels || [];
+
+            if (!conversationLabels.length) return;
+
+            // Step 3: Prepare a map of conversationId → assigned labels
+            const labelMap = conversationLabels.reduce((acc, label) => {
+                const convId = label.conversationId.toString();
+                if (!acc[convId]) acc[convId] = [];
+                acc[convId].push({
+                    id:
+                        typeof label.id === "bigint"
+                            ? Number(label.id)
+                            : label.id,
+                    name: label.name,
+                    color: label.color,
+                    assigned_at: label.assignedAt || new Date().toISOString(),
+                    conversation_id: convId,
+                });
+                return acc;
+            }, {});
+
+            // Step 4: Merge labels into existing conversations
+            const updatedConversations = conversations.map((conv) => {
+                const convId = conv.id.toString();
+                const convLabels = labelMap[convId] || [];
+                return {
+                    ...conv,
+                    labels: convLabels,
+                };
+            });
+
+            // Step 5: Update state
+            setConversations(updatedConversations);
+
+            // Step 6: If a conversation is open, refresh its labels too
+            if (selectedConversation) {
+                const updatedSelected = updatedConversations.find(
+                    (c) => c.id === selectedConversation.id
+                );
+                if (updatedSelected) setSelectedConversation(updatedSelected);
+            }
+        } catch (error) {
+            console.error("Failed to initialize conversation labels:", error);
+            toast.error("Failed to load conversation labels");
+        }
     },
 
-    // Get all labels
+    // Get all labels (ordered by sort_order)
     getLabels: async () => {
         set({ isLabelsLoading: true });
         try {
-            // TODO: Replace with actual API call when backend is ready
-            // const res = await axiosInstance.get("/labels");
-            // set({ labels: res.data.labels });
+            const res = await axiosInstance.get("/labels");
+            // Backend should return labels with BigInt converted to number/string
+            const labels = res.data.labels.map((label) => ({
+                ...label,
+                id: typeof label.id === "bigint" ? Number(label.id) : label.id,
+                sort_order: label.sort_order ?? 0,
+                created_at: label.created_at
+                    ? new Date(label.created_at)
+                    : new Date(),
+            }));
 
-            // For now, use default labels
-            get().initializeDefaultLabels();
+            set({ labels });
         } catch (error) {
             toast.error(
                 error.response?.data?.message || "Failed to load labels"
@@ -141,8 +116,8 @@ export const useLabelsStore = create((set, get) => ({
             return false;
         }
 
-        if (labelData.name.length > 50) {
-            toast.error("Label name must be 50 characters or less");
+        if (labelData.name.length > 100) {
+            toast.error("Label name must be 100 characters or less");
             return false;
         }
 
@@ -156,23 +131,25 @@ export const useLabelsStore = create((set, get) => ({
         }
 
         try {
-            // TODO: Replace with actual API call when backend is ready
-            // const res = await axiosInstance.post("/labels", {
-            //     name: labelData.name,
-            //     color: labelData.color,
-            // });
-            // const newLabel = res.data.label;
+            const res = await axiosInstance.post("/labels", {
+                name: labelData.name.trim(),
+                color: labelData.color || get().getRandomColor(),
+            });
 
-            // Optimistic update
             const newLabel = {
-                id: `custom-${Date.now()}`, // Replace with actual ID from API
-                name: labelData.name,
-                color: labelData.color,
-                isDefault: false,
+                ...res.data.label,
+                id:
+                    typeof res.data.label.id === "bigint"
+                        ? Number(res.data.label.id)
+                        : res.data.label.id,
+                sort_order: res.data.label.sort_order ?? currentLabels.length,
+                created_at: res.data.label.created_at
+                    ? new Date(res.data.label.created_at)
+                    : new Date(),
             };
 
+            // Add to end of list (highest sort_order)
             set({ labels: [...currentLabels, newLabel] });
-            toast.success("Label created successfully");
             return true;
         } catch (error) {
             toast.error(
@@ -192,21 +169,15 @@ export const useLabelsStore = create((set, get) => ({
             return false;
         }
 
-        // Prevent editing default labels (optional - remove if defaults should be editable)
-        // if (labelToUpdate.isDefault) {
-        //     toast.error("Default labels cannot be edited");
-        //     return false;
-        // }
-
         // Validate name if being updated
-        if (updates.name) {
+        if (updates.name !== undefined) {
             if (updates.name.trim().length === 0) {
                 toast.error("Label name is required");
                 return false;
             }
 
-            if (updates.name.length > 50) {
-                toast.error("Label name must be 50 characters or less");
+            if (updates.name.length > 100) {
+                toast.error("Label name must be 100 characters or less");
                 return false;
             }
 
@@ -222,18 +193,19 @@ export const useLabelsStore = create((set, get) => ({
             }
         }
 
-        try {
-            // TODO: Replace with actual API call when backend is ready
-            // await axiosInstance.put(`/labels/${labelId}`, updates);
+        // Optimistic update
+        const previousLabels = currentLabels;
+        const updatedLabels = currentLabels.map((label) =>
+            label.id === labelId ? { ...label, ...updates } : label
+        );
+        set({ labels: updatedLabels });
 
-            // Optimistic update
-            const updatedLabels = currentLabels.map((label) =>
-                label.id === labelId ? { ...label, ...updates } : label
-            );
-            set({ labels: updatedLabels });
-            toast.success("Label updated successfully");
+        try {
+            await axiosInstance.put(`/labels/${labelId}`, updates);
             return true;
         } catch (error) {
+            // Revert optimistic update on failure
+            set({ labels: previousLabels });
             toast.error(
                 error.response?.data?.message || "Failed to update label"
             );
@@ -251,24 +223,21 @@ export const useLabelsStore = create((set, get) => ({
             return false;
         }
 
-        // Optional: Prevent deleting default labels
-        // if (labelToDelete.isDefault) {
-        //     toast.error("Default labels cannot be deleted");
-        //     return false;
-        // }
+        // Optimistic update
+        const previousLabels = currentLabels;
+        const updatedLabels = currentLabels
+            .filter((label) => label.id !== labelId)
+            // Reindex sort_order after deletion
+            .map((label, index) => ({ ...label, sort_order: index }));
+
+        set({ labels: updatedLabels });
 
         try {
-            // TODO: Replace with actual API call when backend is ready
-            // await axiosInstance.delete(`/labels/${labelId}`);
-
-            // Optimistic update
-            const updatedLabels = currentLabels.filter(
-                (label) => label.id !== labelId
-            );
-            set({ labels: updatedLabels });
-            toast.success("Label deleted successfully");
+            await axiosInstance.delete(`/labels/${labelId}`);
             return true;
         } catch (error) {
+            // Revert optimistic update on failure
+            set({ labels: previousLabels });
             toast.error(
                 error.response?.data?.message || "Failed to delete label"
             );
@@ -276,18 +245,33 @@ export const useLabelsStore = create((set, get) => ({
         }
     },
 
+    // =====================UNIMPLEMENTED FEATURES==========================
+
     // Reorder labels (drag and drop)
     reorderLabels: async (reorderedLabels) => {
-        try {
-            // TODO: Replace with actual API call when backend is ready
-            // await axiosInstance.post("/labels/reorder", {
-            //     labelIds: reorderedLabels.map((l) => l.id),
-            // });
+        const previousLabels = get().labels;
 
-            // Optimistic update
-            set({ labels: reorderedLabels });
+        // Update sort_order to match new positions
+        const labelsWithNewOrder = reorderedLabels.map((label, index) => ({
+            ...label,
+            sort_order: index,
+        }));
+
+        // Optimistic update
+        set({ labels: labelsWithNewOrder });
+
+        try {
+            // Send array of {labelId, position} objects
+            await axiosInstance.post("/labels/reorder", {
+                orders: labelsWithNewOrder.map((label) => ({
+                    labelId: label.id,
+                    position: label.sort_order,
+                })),
+            });
             return true;
         } catch (error) {
+            // Revert on failure
+            set({ labels: previousLabels });
             toast.error(
                 error.response?.data?.message || "Failed to reorder labels"
             );
@@ -295,45 +279,67 @@ export const useLabelsStore = create((set, get) => ({
         }
     },
 
-    // Assign label to conversation
-    assignLabelToConversation: async (conversationId, labelId) => {
-        try {
-            // TODO: Replace with actual API call when backend is ready
-            // await axiosInstance.post(`/conversations/${conversationId}/labels`, {
-            //     labelId,
-            // });
+    // Reorder single label (for keyboard navigation or programmatic reordering)
+    reorderSingleLabel: async (labelId, newPosition) => {
+        const currentLabels = get().labels;
+        const previousLabels = currentLabels;
 
-            toast.success("Label assigned successfully");
+        const labelIndex = currentLabels.findIndex((l) => l.id === labelId);
+        if (labelIndex === -1) {
+            toast.error("Label not found");
+            return false;
+        }
+
+        // Validate new position
+        if (newPosition < 0 || newPosition >= currentLabels.length) {
+            toast.error("Invalid position");
+            return false;
+        }
+
+        // Create reordered array
+        const reordered = [...currentLabels];
+        const [movedLabel] = reordered.splice(labelIndex, 1);
+        reordered.splice(newPosition, 0, movedLabel);
+
+        // Update sort_order
+        const labelsWithNewOrder = reordered.map((label, index) => ({
+            ...label,
+            sort_order: index,
+        }));
+
+        // Optimistic update
+        set({ labels: labelsWithNewOrder });
+
+        try {
+            await axiosInstance.post(`/labels/${labelId}/reorder`, {
+                newPosition,
+            });
             return true;
         } catch (error) {
+            // Revert on failure
+            set({ labels: previousLabels });
             toast.error(
-                error.response?.data?.message || "Failed to assign label"
+                error.response?.data?.message || "Failed to reorder label"
             );
             return false;
         }
     },
 
-    // Remove label from conversation
-    removeLabelFromConversation: async (conversationId, labelId) => {
-        try {
-            // TODO: Replace with actual API call when backend is ready
-            // await axiosInstance.delete(
-            //     `/conversations/${conversationId}/labels/${labelId}`
-            // );
-
-            toast.success("Label removed successfully");
-            return true;
-        } catch (error) {
-            toast.error(
-                error.response?.data?.message || "Failed to remove label"
-            );
-            return false;
-        }
-    },
+    // ==========================================================================
 
     // Set label filter
     setSelectedLabelFilter: (filter) => {
         set({ selectedLabelFilter: filter });
+    },
+
+    // Get label by ID
+    getLabelById: (labelId) => {
+        return get().labels.find((l) => l.id === labelId);
+    },
+
+    // Get sorted labels
+    getSortedLabels: () => {
+        return [...get().labels].sort((a, b) => a.sort_order - b.sort_order);
     },
 
     // Get random color for new labels
@@ -353,4 +359,5 @@ export const useLabelsStore = create((set, get) => ({
         return LABEL_COLORS[Math.floor(Math.random() * LABEL_COLORS.length)]
             .hex;
     },
+    setIsLabelsLoading: (value) => set({ isLabelsLoading: value }),
 }));

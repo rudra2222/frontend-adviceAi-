@@ -17,7 +17,7 @@ import ConfirmModal from "./ui/ConfirmModal";
 const LabelsManagement = ({ onBack }) => {
     const {
         labels,
-        isLabelsLoading,
+        setIsLabelsLoading,
         getLabels,
         createLabel,
         updateLabel,
@@ -34,7 +34,11 @@ const LabelsManagement = ({ onBack }) => {
 
     // Load labels on mount
     useEffect(() => {
-        getLabels();
+        (async () => {
+            setIsLabelsLoading(true);
+            await getLabels();
+            setIsLabelsLoading(false);
+        })();
     }, [getLabels]);
 
     // Handle create new label
