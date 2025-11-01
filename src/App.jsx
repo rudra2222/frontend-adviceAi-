@@ -14,7 +14,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Navbar from "./components/Navbar";
 
 import { useAuthStore } from "./store/useAuthStore";
-import { useThemeStore } from "./store/useThemeStore";
+// import { useThemeStore } from "./store/useThemeStore";
 import { QuickRepliesProvider } from "./context/QuickRepliesContext";
 
 /**
@@ -34,7 +34,7 @@ import { QuickRepliesProvider } from "./context/QuickRepliesContext";
  */
 const App = () => {
     const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
-    const { theme } = useThemeStore();
+    // const { theme } = useThemeStore();
 
     useEffect(() => {
         checkAuth();
@@ -50,7 +50,7 @@ const App = () => {
 
     return (
         <QuickRepliesProvider>
-            <div data-theme={theme}>
+            <div className="bg-[#0D0D0D]">
                 <Routes>
                     {/* Public Routes - Auth pages with Navbar */}
                     <Route

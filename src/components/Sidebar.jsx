@@ -213,7 +213,7 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="h-full w-20 lg:w-96 border-r border-base-300 flex flex-col transition-all duration-200">
+        <aside className="h-full pr-3 mr-2 w-20 lg:w-96 border-r border-base-300 flex flex-col transition-all duration-200">
             {/* Search Box */}
             <ChatSearchBox
                 value={searchQuery}
@@ -359,7 +359,8 @@ const Sidebar = () => {
                             </div>
 
                             {/* Conversation Info */}
-                            <div className="hidden lg:block text-left min-w-72">
+
+                            <div className="w-full hidden lg:flex flex-col text-left">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-0.5 truncate w-1/2">
                                         <span className="font-medium truncate">

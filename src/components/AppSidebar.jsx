@@ -84,7 +84,7 @@ const AppSidebar = () => {
             {/* Header (simplified: logo text + toggle) */}
             <SidebarHeader
                 className={cn(
-                    "relative py-3 transition-all duration-300 flex items-center",
+                    "relative py-3 transition-all duration-300 flex items-center bg-black",
                     open ? "px-4 justify-between" : "px-2 justify-center"
                 )}
             >
@@ -133,7 +133,7 @@ const AppSidebar = () => {
             {/* Content */}
             <SidebarContent
                 className={cn(
-                    "relative flex-1 pb-4 transition-all duration-300",
+                    "relative flex-1 pb-4 transition-all duration-300 bg-black",
                     open ? "px-3" : "px-2"
                 )}
             >
@@ -237,7 +237,7 @@ const AppSidebar = () => {
             {/* Footer */}
             <SidebarFooter
                 className={cn(
-                    "relative border-t border-white/10 pb-4 pt-4 transition-all duration-300",
+                    "relative border-t border-white/10 pb-4 pt-4 transition-all duration-300 bg-black",
                     open ? "px-3" : "px-2"
                 )}
             >

@@ -20,9 +20,9 @@ const HomePage = () => {
     const { selectedConversation } = useChatStore();
 
     return (
-        <div className="h-screen bg-base-200">
-            <div className="flex items-center justify-center p-4">
-                <div className="bg-base-100 rounded-lg shadow-cl w-full h-[calc(100vh-2rem)]">
+        <div className="h-screen overflow-hidden">
+            <div className="flex items-center justify-center p-4 h-full">
+                <div className="rounded-lg shadow-cl w-full h-[calc(100vh-2rem)]">
                     <div className="flex h-full rounded-lg overflow-hidden">
                         <Sidebar />
 

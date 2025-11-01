@@ -69,7 +69,7 @@ const ChatHeader = () => {
 
                 {/* Close button */}
                 <button
-                    className="btn btn-sm btn-circle gap-2 hover:bg-red-600"
+                    className="btn btn-sm btn-circle gap-2 bg-transparent border-transparent text-gray-200 hover:bg-red-600"
                     onClick={() => setSelectedConversation(null)}
                 >
                     <X />

@@ -31,7 +31,7 @@ const DashboardLayout = () => {
             <AppSidebar />
             <SidebarInset>
                 {/* Content area - renders nested routes */}
-                <main className="flex-1 w-full h-screen overflow-hidden">
+                <main className="w-full h-screen overflow-hidden">
                     <Outlet />
                 </main>
             </SidebarInset>

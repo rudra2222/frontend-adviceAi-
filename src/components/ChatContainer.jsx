@@ -176,7 +176,7 @@ const ChatContainer = () => {
                                         <div
                                             className={`chat-bubble flex flex-col rounded-2xl ${
                                                 message.direction === "outbound"
-                                                    ? ""
+                                                    ? "bg-[#144D37] text-white"
                                                     : "bg-zinc-800 text-white"
                                             } px-4 py-2`}
                                         >

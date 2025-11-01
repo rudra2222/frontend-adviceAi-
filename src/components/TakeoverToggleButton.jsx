@@ -20,7 +20,7 @@ const TakeoverToggleButton = () => {
     return (
         <button
             onClick={handleToggle}
-            className={`btn btn-sm btn-outline fixed right-24 ${
+            className={`btn btn-sm btn-outline border-2 text-gray-200 hover:bg-grey-200 fixed right-24 ${
                 isHumanInterventionActive ? "bg-red-600" : ""
             }`}
             aria-pressed={isHumanInterventionActive}
