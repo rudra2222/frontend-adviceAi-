@@ -4,14 +4,23 @@ import { useEffect, useRef } from "react";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
+// import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
 import { LinkifiedText } from "./util/LinkifiedText";
 
 const ChatContainer = () => {
-    const { messages, getMessages, isMessagesLoading, selectedConversation } =
-        useChatStore();
+    const {
+        messages,
+        getMessages,
+        isMessagesLoading,
+        selectedConversation,
+        // setInterventionToggleDisabled,
+        // subscribeToMessages,
+        // unsubscribeFromMessages,
+    } = useChatStore();
 
+    // const { authUser } = useAuthStore();
     const messageEndRef = useRef(null);
     const messageRefs = useRef({});
 
@@ -39,7 +48,7 @@ const ChatContainer = () => {
 
     if (isMessagesLoading) {
         return (
-            <div className="flex-1 flex flex-col overflow-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+            <div className="flex-1 flex flex-col overflow-auto chat-scrollbar">
                 <ChatHeader />
                 <MessageSkeleton />
                 <MessageInput />
@@ -58,11 +67,11 @@ const ChatContainer = () => {
     };
 
     return (
-        <div className="flex-1 flex flex-col overflow-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+        <div className="flex-1 flex flex-col overflow-auto chat-scrollbar">
             <ChatHeader />
 
             {messages.length === 0 && (
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 flex justify-center items-center text-stone-400 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 flex justify-center items-center text-stone-400 chat-scrollbar">
                     No messages yet!
                 </div>
             )}
