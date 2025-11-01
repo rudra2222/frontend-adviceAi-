@@ -1,4 +1,5 @@
 import { useChatStore } from "../store/useChatStore.js";
+import { Loader2 } from "lucide-react";
 
 const TakeoverToggleButton = () => {
     const {
@@ -30,7 +31,18 @@ const TakeoverToggleButton = () => {
             }
             disabled={interventionToggleDisabled}
         >
-            {isHumanInterventionActive ? "Takeover ON" : "Takeover OFF"}
+            {interventionToggleDisabled ? (
+                <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    {isHumanInterventionActive
+                        ? "Turning OFF..."
+                        : "Turning ON..."}
+                </>
+            ) : (
+                <>
+                    {isHumanInterventionActive ? "Takeover ON" : "Takeover OFF"}
+                </>
+            )}
         </button>
     );
 };
