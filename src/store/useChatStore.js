@@ -114,14 +114,14 @@ export const useChatStore = create((set, get) => ({
                       mimeType: null,
                   };
 
-            const res = await axiosInstance.post(
-                "/messages/send-message",
-                body
-            );
+            await axiosInstance.post("/messages/send-message", body);
 
             uploadRes = null;
         } catch (error) {
-            toast.error(error.response?.data?.message);
+            toast.error(
+                error.response?.data?.message || "Failed to send message"
+            );
+            throw error;
         }
     },
 

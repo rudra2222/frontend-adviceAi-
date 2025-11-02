@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
 import { X, Check } from "lucide-react";
 

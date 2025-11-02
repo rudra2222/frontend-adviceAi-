@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Search, Briefcase, HelpCircle, User, Tag } from "lucide-react";
+import { useState, useMemo, useRef, useEffect, memo } from "react";
+import { Search, Briefcase, HelpCircle, User } from "lucide-react";
 
 // Individual menu item (memoized for performance)
-const SettingsMenuItem = React.memo(function SettingsMenuItem({
+const SettingsMenuItem = memo(function SettingsMenuItem({
     icon: Icon,
     title,
     subtitle,

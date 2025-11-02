@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Edit2, Trash2, Check, X } from "lucide-react";
 import { useLabelsStore } from "../store/useLabelsStore";
 import { LABEL_COLORS, MAX_LABELS } from "../constants";

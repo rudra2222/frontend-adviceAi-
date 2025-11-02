@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Settings } from "lucide-react";
 import SettingsSidebar from "../components/SettingsSidebar";
 import QuickRepliesSettings from "../components/QuickRepliesSettings";

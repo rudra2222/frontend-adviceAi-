@@ -1,13 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuickReplies } from "../context/QuickRepliesContext";
 
-const QuickReplyAutocomplete = ({
-    inputRef,
-    onSelect,
-    isOpen,
-    query,
-    position,
-}) => {
+const QuickReplyAutocomplete = ({ onSelect, isOpen, query, position }) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const { getMatchingReplies, quickReplies } = useQuickReplies();
     const dropdownRef = useRef();

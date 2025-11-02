@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Check, X } from "lucide-react";
 import { useLabelsStore } from "../store/useLabelsStore";
@@ -272,7 +272,7 @@ const LabelAssignmentMenu = ({
             </div>
 
             {/* WhatsApp-style animations */}
-            <style jsx>{`
+            <style>{`
                 @keyframes menuFadeIn {
                     from {
                         opacity: 0;

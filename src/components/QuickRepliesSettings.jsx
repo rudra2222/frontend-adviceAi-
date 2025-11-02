@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     ArrowLeft,
     Plus,
@@ -320,8 +320,8 @@ const QuickRepliesSettings = ({ onBack, onNavigateToLabels }) => {
 
                         <div className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
                             <p className="text-zinc-400 text-sm mb-2">
-                                Click "Manage Labels" to create and organize
-                                conversation labels.
+                                Click &quot;Manage Labels&quot; to create and
+                                organize conversation labels.
                             </p>
                             <p className="text-zinc-500 text-xs">
                                 You can create up to 20 custom labels to

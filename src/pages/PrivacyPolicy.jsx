@@ -1,4 +1,4 @@
-import React from "react";
+// React default import not required with the new JSX transform
 import { ArrowLeft } from "lucide-react";
 
 const PrivacyPolicy = ({ onBack }) => {
@@ -199,7 +199,7 @@ const PrivacyPolicy = ({ onBack }) => {
                             before providing any personal information.
                         </p>
 
-                        <h2>7. Children's Privacy</h2>
+                        <h2>7. Children&apos;s Privacy</h2>
                         <p>
                             Our services are not intended for individuals under
                             the age of 18. We do not knowingly collect personal
@@ -221,8 +221,8 @@ const PrivacyPolicy = ({ onBack }) => {
                         <p>
                             We may update this Privacy Policy from time to time.
                             Any changes will be posted on this page with an
-                            updated "Effective Date." We encourage you to review
-                            this policy periodically.
+                            updated &quot;Effective Date.&quot; We encourage you
+                            to review this policy periodically.
                         </p>
 
                         <h2>10. Contact Us</h2>
@@ -238,7 +238,8 @@ const PrivacyPolicy = ({ onBack }) => {
                             <br />
                             <strong>Phone:</strong> +91 89108 49189
                             <br />
-                            <strong>Address:</strong> Balaji tower Dankuni West Bengal, 712311
+                            <strong>Address:</strong> Balaji tower Dankuni West
+                            Bengal, 712311
                         </p>
 
                         <hr

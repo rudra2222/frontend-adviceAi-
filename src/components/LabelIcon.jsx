@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import PropTypes from "prop-types";
 import { Tag, Tags } from "lucide-react";
 
@@ -32,7 +32,7 @@ const LabelIcon = memo(({ labels }) => {
                 style={{ color: lastLabel.color }}
                 strokeWidth={2.5}
             />
-            <style jsx>{`
+            <style>{`
                 @keyframes iconFadeIn {
                     from {
                         opacity: 0;

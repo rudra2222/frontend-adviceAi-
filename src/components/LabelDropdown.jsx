@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Check } from "lucide-react";
 import { useLabelsStore } from "../store/useLabelsStore";
@@ -160,7 +160,7 @@ const LabelDropdown = ({
             </div>
 
             {/* WhatsApp-style animations */}
-            <style jsx>{`
+            <style>{`
                 @keyframes dropdownEnter {
                     from {
                         opacity: 0;
