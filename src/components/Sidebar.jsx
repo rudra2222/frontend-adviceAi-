@@ -7,6 +7,7 @@ import {
     AudioLines,
     File,
     ChevronDown,
+    Sticker,
 } from "lucide-react";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
@@ -385,30 +386,118 @@ const Sidebar = () => {
                                 <div>
                                     {conversation.last_message?.id && (
                                         <p className="text-sm text-zinc-400 truncate w-64">
-                                            {conversation.last_message
-                                                .media_info &&
-                                                renderIcon(
-                                                    JSON.parse(
+                                            {(() => {
+                                                // Check if there's message text
+                                                if (
+                                                    conversation.last_message
+                                                        .message_text?.length >
+                                                    0
+                                                ) {
+                                                    // Show media icon if there's media_info
+                                                    if (
                                                         conversation
                                                             .last_message
                                                             .media_info
-                                                    )?.mime_type
-                                                )}
-                                            {conversation.last_message
-                                                .message_text?.length > 0
-                                                ? conversation.last_message
-                                                      .message_text
-                                                : JSON.parse(
-                                                      conversation.last_message
-                                                          .media_info
-                                                  )?.mime_type.substring(
-                                                      0,
-                                                      JSON.parse(
-                                                          conversation
-                                                              .last_message
-                                                              .media_info
-                                                      )?.mime_type?.indexOf("/")
-                                                  )}
+                                                    ) {
+                                                        try {
+                                                            const mediaInfo =
+                                                                JSON.parse(
+                                                                    conversation
+                                                                        .last_message
+                                                                        .media_info
+                                                                );
+                                                            const mimeType =
+                                                                mediaInfo?.mimeType ||
+                                                                mediaInfo?.mime_type;
+                                                            if (mimeType) {
+                                                                return (
+                                                                    <>
+                                                                        {renderIcon(
+                                                                            mimeType
+                                                                        )}
+                                                                        {
+                                                                            conversation
+                                                                                .last_message
+                                                                                .message_text
+                                                                        }
+                                                                    </>
+                                                                );
+                                                            }
+                                                        } catch (e) {
+                                                            // Ignore parse errors
+                                                        }
+                                                    }
+                                                    return conversation
+                                                        .last_message
+                                                        .message_text;
+                                                }
+
+                                                // No text, check for media
+                                                if (
+                                                    conversation.last_message
+                                                        .media_info
+                                                ) {
+                                                    try {
+                                                        const mediaInfo =
+                                                            JSON.parse(
+                                                                conversation
+                                                                    .last_message
+                                                                    .media_info
+                                                            );
+                                                        const mediaId =
+                                                            mediaInfo?.mediaId ||
+                                                            mediaInfo?.id;
+                                                        const mimeType =
+                                                            mediaInfo?.mimeType ||
+                                                            mediaInfo?.mime_type;
+
+                                                        // Check if we have valid media
+                                                        if (
+                                                            mediaId &&
+                                                            mimeType
+                                                        ) {
+                                                            return (
+                                                                <>
+                                                                    {renderIcon(
+                                                                        mimeType
+                                                                    )}
+                                                                    {mimeType.substring(
+                                                                        0,
+                                                                        mimeType.indexOf(
+                                                                            "/"
+                                                                        )
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        }
+
+                                                        // Invalid/unsupported media
+                                                        return (
+                                                            <>
+                                                                <Sticker className="size-4 inline mr-2 align-text-center" />
+                                                                Unsupported
+                                                                message type
+                                                            </>
+                                                        );
+                                                    } catch (e) {
+                                                        return (
+                                                            <>
+                                                                <Sticker className="size-4 inline mr-2 align-text-center" />
+                                                                Unsupported
+                                                                message type
+                                                            </>
+                                                        );
+                                                    }
+                                                }
+
+                                                // No text and no media
+                                                return (
+                                                    <>
+                                                        <Sticker className="size-4 inline mr-2 align-text-center" />
+                                                        Unsupported message type
+                                                    </>
+                                                );
+                                            })()}
                                         </p>
                                     )}
 
