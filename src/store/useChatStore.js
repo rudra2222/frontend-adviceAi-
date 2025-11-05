@@ -50,8 +50,10 @@ export const useChatStore = create((set, get) => ({
         }
     },
 
-    getConversation: async (conversationId) => {
-        set({ isConversationsLoading: true });
+    getConversation: async (conversationId, silent = false) => {
+        if (!silent) {
+            set({ isConversationsLoading: true });
+        }
         try {
             const res = await axiosInstance.get(
                 `/conversations/${conversationId}/`
@@ -76,7 +78,9 @@ export const useChatStore = create((set, get) => ({
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
-            set({ isConversationsLoading: false });
+            if (!silent) {
+                set({ isConversationsLoading: false });
+            }
         }
     },
 
@@ -153,9 +157,9 @@ export const useChatStore = create((set, get) => ({
                 }
             });
 
-            // If its a new conversation, fetch it
+            // If its a new conversation, fetch it silently
             if (!isContains) {
-                get().getConversation(newMessage.conversation_id);
+                get().getConversation(newMessage.conversation_id, true);
             }
 
             if (get().selectedConversation?.id === newMessage.conversation_id) {
