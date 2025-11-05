@@ -207,25 +207,42 @@ const ChatContainer = () => {
                                                             <p className="text-sm text-gray-300 truncate">
                                                                 {repliedMessage.has_text
                                                                     ? repliedMessage.message_text
-                                                                    : JSON.parse(
-                                                                          repliedMessage.media_info
-                                                                      )?.mime_type?.startsWith(
-                                                                          "image/"
-                                                                      )
-                                                                    ? "📷 Image"
-                                                                    : JSON.parse(
-                                                                          repliedMessage.media_info
-                                                                      )?.mime_type?.startsWith(
-                                                                          "video/"
-                                                                      )
-                                                                    ? "🎥 Video"
-                                                                    : JSON.parse(
-                                                                          repliedMessage.media_info
-                                                                      )?.mime_type?.startsWith(
-                                                                          "audio/"
-                                                                      )
-                                                                    ? "🎵 Audio"
-                                                                    : "Media"}
+                                                                    : (() => {
+                                                                          try {
+                                                                              const mediaInfo =
+                                                                                  typeof repliedMessage.media_info ===
+                                                                                  "string"
+                                                                                      ? JSON.parse(
+                                                                                            repliedMessage.media_info
+                                                                                        )
+                                                                                      : repliedMessage.media_info;
+                                                                              const mimeType =
+                                                                                  mediaInfo?.mimeType ||
+                                                                                  mediaInfo?.mime_type;
+
+                                                                              if (
+                                                                                  mimeType?.startsWith(
+                                                                                      "image/"
+                                                                                  )
+                                                                              )
+                                                                                  return "📷 Image";
+                                                                              if (
+                                                                                  mimeType?.startsWith(
+                                                                                      "video/"
+                                                                                  )
+                                                                              )
+                                                                                  return "🎥 Video";
+                                                                              if (
+                                                                                  mimeType?.startsWith(
+                                                                                      "audio/"
+                                                                                  )
+                                                                              )
+                                                                                  return "🎧 Audio";
+                                                                              return "Media";
+                                                                          } catch {
+                                                                              return "Media";
+                                                                          }
+                                                                      })()}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -233,101 +250,149 @@ const ChatContainer = () => {
                                             )}
 
                                             {/* Media Content */}
-                                            {JSON.parse(message.media_info)
-                                                ?.id !== null &&
-                                                JSON.parse(
-                                                    message.media_info
-                                                )?.mime_type?.startsWith(
-                                                    "image/"
-                                                ) && (
-                                                    <img
-                                                        src={`${BACKEND_URL}/api/v1/get-media?id=${
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.id
-                                                        }&type=${
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.mime_type
-                                                        }`}
-                                                        alt={
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.description
-                                                                ?.length > 0
-                                                                ? JSON.parse(
-                                                                      message.media_info
-                                                                  )?.description
-                                                                : "Image"
-                                                        }
-                                                        className="sm:max-w-[200px] rounded-md mb-2"
-                                                        loading="lazy"
-                                                    />
-                                                )}
-                                            {JSON.parse(message.media_info)
-                                                ?.id !== null &&
-                                                JSON.parse(
-                                                    message.media_info
-                                                )?.mime_type?.startsWith(
-                                                    "video/"
-                                                ) && (
-                                                    <video
-                                                        src={`${BACKEND_URL}/api/v1/get-media?id=${
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.id
-                                                        }&type=${
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.mime_type
-                                                        }`}
-                                                        alt={
-                                                            JSON.parse(
-                                                                message.media_info
-                                                            )?.description
-                                                                ?.length > 0
-                                                                ? JSON.parse(
-                                                                      message.media_info
-                                                                  )?.description
-                                                                : "Video"
-                                                        }
-                                                        className="sm:max-w-[200px] rounded-md mb-2"
-                                                        controls
-                                                        preload="auto"
-                                                    />
-                                                )}
-                                            {JSON.parse(message.media_info)
-                                                ?.id !== null &&
-                                                JSON.parse(
-                                                    message.media_info
-                                                )?.mime_type?.startsWith(
-                                                    "audio/"
-                                                ) && (
-                                                    <audio controls>
-                                                        <source
-                                                            src={`${BACKEND_URL}/api/v1/get-media?id=${
-                                                                JSON.parse(
-                                                                    message.media_info
-                                                                )?.id
-                                                            }&type=${
-                                                                JSON.parse(
-                                                                    message.media_info
-                                                                )?.mime_type
-                                                            }`}
-                                                            type={
-                                                                JSON.parse(
-                                                                    message.media_info
-                                                                )?.mime_type
-                                                            }
+                                            {(() => {
+                                                // Early return if no media_info
+                                                if (!message.media_info)
+                                                    return null;
+
+                                                let mediaInfo;
+                                                try {
+                                                    mediaInfo =
+                                                        typeof message.media_info ===
+                                                        "string"
+                                                            ? JSON.parse(
+                                                                  message.media_info
+                                                              )
+                                                            : message.media_info;
+                                                } catch (e) {
+                                                    console.error(
+                                                        "Failed to parse media_info:",
+                                                        e
+                                                    );
+                                                    return null;
+                                                }
+
+                                                // Handle inconsistent backend field names:
+                                                // - Videos use: { mediaId, mimeType }
+                                                // - Images/Stickers use: { id, mime_type }
+                                                const mediaId =
+                                                    mediaInfo?.mediaId ||
+                                                    mediaInfo?.id;
+                                                const mimeType =
+                                                    mediaInfo?.mimeType ||
+                                                    mediaInfo?.mime_type;
+                                                const description =
+                                                    mediaInfo?.description ||
+                                                    "Media";
+
+                                                if (!mediaId || !mimeType)
+                                                    return null;
+
+                                                const mediaUrl = `${BACKEND_URL}/api/v1/get-media?id=${mediaId}&type=${mimeType}`;
+
+                                                // Images (including webp stickers)
+                                                if (
+                                                    mimeType.startsWith(
+                                                        "image/"
+                                                    )
+                                                ) {
+                                                    return (
+                                                        <img
+                                                            src={mediaUrl}
+                                                            alt={description}
                                                             className="sm:max-w-[200px] rounded-md mb-2"
+                                                            loading="lazy"
                                                         />
-                                                    </audio>
-                                                )}
+                                                    );
+                                                }
+
+                                                // Videos
+                                                if (
+                                                    mimeType.startsWith(
+                                                        "video/"
+                                                    )
+                                                ) {
+                                                    return (
+                                                        <video
+                                                            src={mediaUrl}
+                                                            className="sm:max-w-[200px] rounded-md mb-2"
+                                                            controls
+                                                            preload="auto"
+                                                        >
+                                                            Your browser does
+                                                            not support video
+                                                            playback.
+                                                        </video>
+                                                    );
+                                                }
+
+                                                // Audio
+                                                if (
+                                                    mimeType.startsWith(
+                                                        "audio/"
+                                                    )
+                                                ) {
+                                                    return (
+                                                        <audio
+                                                            controls
+                                                            className="mb-2"
+                                                        >
+                                                            <source
+                                                                src={mediaUrl}
+                                                                type={mimeType}
+                                                            />
+                                                            Your browser does
+                                                            not support audio
+                                                            playback.
+                                                        </audio>
+                                                    );
+                                                }
+
+                                                return null;
+                                            })()}
                                             {message.has_text && (
                                                 <LinkifiedText
                                                     text={message.message_text}
                                                 />
                                             )}
+                                            {!message.has_text &&
+                                                (() => {
+                                                    // Check if media_info exists and has valid content
+                                                    try {
+                                                        if (!message.media_info)
+                                                            return true; // Show unsupported message
+
+                                                        const mediaInfo =
+                                                            typeof message.media_info ===
+                                                            "string"
+                                                                ? JSON.parse(
+                                                                      message.media_info
+                                                                  )
+                                                                : message.media_info;
+
+                                                        const mediaId =
+                                                            mediaInfo?.mediaId ||
+                                                            mediaInfo?.id;
+                                                        const mimeType =
+                                                            mediaInfo?.mimeType ||
+                                                            mediaInfo?.mime_type;
+
+                                                        // If no valid media ID or mime type, show unsupported message
+                                                        return (
+                                                            !mediaId ||
+                                                            !mimeType
+                                                        );
+                                                    } catch {
+                                                        return true; // Show unsupported message on parse error
+                                                    }
+                                                })() && (
+                                                    <div className="flex items-center gap-2 text-sm italic text-gray-400">
+                                                        <span>
+                                                            Unsupported message
+                                                            type
+                                                        </span>
+                                                    </div>
+                                                )}
                                         </div>
                                     </div>
                                 );
