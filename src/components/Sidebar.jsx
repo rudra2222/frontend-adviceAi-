@@ -48,6 +48,7 @@ const Sidebar = () => {
         selectedConversation,
         setSelectedConversation,
         isConversationsLoading,
+        hasInitiallyLoaded,
     } = useChatStore();
 
     const {
@@ -202,8 +203,9 @@ const Sidebar = () => {
         [filteredConversations]
     );
 
-    // Show loading skeleton while conversations are being fetched
-    if (isConversationsLoading) return <SidebarSkeleton />;
+    // Show loading skeleton only on initial load, not when new conversations are added
+    if (isConversationsLoading && !hasInitiallyLoaded)
+        return <SidebarSkeleton />;
 
     // Get selected label name for display
     const getSelectedLabelName = () => {

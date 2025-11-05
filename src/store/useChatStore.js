@@ -12,6 +12,7 @@ export const useChatStore = create((set, get) => ({
     isMessagesLoading: false,
     interventionToggleDisabled: false,
     isHumanInterventionActive: false,
+    hasInitiallyLoaded: false,
 
     getInitialConversations: async () => {
         set({ isConversationsLoading: true });
@@ -23,6 +24,7 @@ export const useChatStore = create((set, get) => ({
                     ...res.data.criticalConversations,
                     ...res.data.nonCriticalConversations,
                 ],
+                hasInitiallyLoaded: true,
             });
         } catch (error) {
             toast.error(error.response.data.message);
