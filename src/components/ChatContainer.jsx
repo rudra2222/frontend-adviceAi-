@@ -277,7 +277,9 @@ const ChatContainer = () => {
                                                 // - Images/Stickers use: { id, mime_type }
                                                 const mediaId =
                                                     mediaInfo?.mediaId ||
-                                                    mediaInfo?.id;
+                                                    mediaInfo?.id ||
+                                                    mediaInfo?.media_id ||
+                                                    mediaInfo?.wa_media_id;
                                                 const mimeType =
                                                     mediaInfo?.mimeType ||
                                                     mediaInfo?.mime_type;
@@ -372,7 +374,9 @@ const ChatContainer = () => {
 
                                                         const mediaId =
                                                             mediaInfo?.mediaId ||
-                                                            mediaInfo?.id;
+                                                            mediaInfo?.id ||
+                                                            mediaInfo?.media_id ||
+                                                            mediaInfo?.wa_media_id;
                                                         const mimeType =
                                                             mediaInfo?.mimeType ||
                                                             mediaInfo?.mime_type;
