@@ -45,7 +45,7 @@ export const LinkifiedText = ({ text }) => {
     const parts = parseTextWithLinks(text);
 
     return (
-        <span className="whitespace-pre-wrap">
+        <span className="whitespace-pre-wrap break-words">
             {parts?.map((part, index) => {
                 if (part?.type === "link") {
                     return (

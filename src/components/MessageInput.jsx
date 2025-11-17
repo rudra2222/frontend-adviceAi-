@@ -439,7 +439,7 @@ const MessageInput = () => {
                 </div>
                 <button
                     type="submit"
-                    className="btn btn-md btn-circle bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed pt-1 pr-1"
+                    className="btn btn-md btn-circle bg-zinc-900 text-zinc-400 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed pt-1 pr-1"
                     title={
                         windowExpired
                             ? "Message window closed"

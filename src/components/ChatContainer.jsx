@@ -1,9 +1,12 @@
 import { useChatStore } from "../store/useChatStore";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
+import ImageModal from "./ImageModal";
+import VideoModal from "./VideoModal";
+import MediaViewer from "./MediaViewer";
 // import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 import profilePicColors from "../lib/profilePicColors.js";
@@ -23,6 +26,16 @@ const ChatContainer = () => {
     // const { authUser } = useAuthStore();
     const messageEndRef = useRef(null);
     const messageRefs = useRef({});
+    const [imageModal, setImageModal] = useState({
+        isOpen: false,
+        imageUrl: "",
+        description: "",
+    });
+    const [videoModal, setVideoModal] = useState({
+        isOpen: false,
+        videoUrl: "",
+        description: "",
+    });
 
     useEffect(() => {
         getMessages(selectedConversation.id);
@@ -46,6 +59,38 @@ const ChatContainer = () => {
         }
     };
 
+    const openImageModal = (imageUrl, description = "") => {
+        setImageModal({
+            isOpen: true,
+            imageUrl,
+            description,
+        });
+    };
+
+    const closeImageModal = () => {
+        setImageModal({
+            isOpen: false,
+            imageUrl: "",
+            description: "",
+        });
+    };
+
+    const openVideoModal = (videoUrl, description = "") => {
+        setVideoModal({
+            isOpen: true,
+            videoUrl,
+            description,
+        });
+    };
+
+    const closeVideoModal = () => {
+        setVideoModal({
+            isOpen: false,
+            videoUrl: "",
+            description: "",
+        });
+    };
+
     if (isMessagesLoading) {
         return (
             <div className="flex-1 flex flex-col overflow-auto chat-scrollbar">
@@ -67,7 +112,7 @@ const ChatContainer = () => {
     };
 
     return (
-        <div className="flex-1 flex flex-col overflow-auto chat-scrollbar">
+        <div className="flex-1 flex flex-col overflow-auto chat-scrollbar chat-doodle-bg">
             <ChatHeader />
 
             {messages.length === 0 && (
@@ -77,7 +122,7 @@ const ChatContainer = () => {
             )}
 
             {messages.length > 0 && (
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent chat-doodle-bg">
                     {Object.entries(
                         messages
                             .filter(
@@ -178,7 +223,11 @@ const ChatContainer = () => {
                                                 message.direction === "outbound"
                                                     ? "bg-[#144D37] text-white"
                                                     : "bg-zinc-800 text-white"
-                                            } px-4 py-2`}
+                                            } ${
+                                                message.message_text?.length > 0
+                                                    ? "px-4 py-2"
+                                                    : "p-0"
+                                            }`}
                                         >
                                             {/* Reply Preview Box */}
                                             {repliedMessage && (
@@ -299,11 +348,19 @@ const ChatContainer = () => {
                                                     )
                                                 ) {
                                                     return (
-                                                        <img
+                                                        <MediaViewer
+                                                            type="image"
                                                             src={mediaUrl}
                                                             alt={description}
-                                                            className="sm:max-w-[200px] rounded-md mb-2"
-                                                            loading="lazy"
+                                                            description={
+                                                                description
+                                                            }
+                                                            onOpen={() =>
+                                                                openImageModal(
+                                                                    mediaUrl,
+                                                                    description
+                                                                )
+                                                            }
                                                         />
                                                     );
                                                 }
@@ -315,16 +372,20 @@ const ChatContainer = () => {
                                                     )
                                                 ) {
                                                     return (
-                                                        <video
+                                                        <MediaViewer
+                                                            type="video"
                                                             src={mediaUrl}
-                                                            className="sm:max-w-[200px] rounded-md mb-2"
-                                                            controls
-                                                            preload="auto"
-                                                        >
-                                                            Your browser does
-                                                            not support video
-                                                            playback.
-                                                        </video>
+                                                            alt={description}
+                                                            description={
+                                                                description
+                                                            }
+                                                            onOpen={() =>
+                                                                openVideoModal(
+                                                                    mediaUrl,
+                                                                    description
+                                                                )
+                                                            }
+                                                        />
                                                     );
                                                 }
 
@@ -335,18 +396,14 @@ const ChatContainer = () => {
                                                     )
                                                 ) {
                                                     return (
-                                                        <audio
-                                                            controls
-                                                            className="mb-2"
-                                                        >
-                                                            <source
-                                                                src={mediaUrl}
-                                                                type={mimeType}
-                                                            />
-                                                            Your browser does
-                                                            not support audio
-                                                            playback.
-                                                        </audio>
+                                                        <MediaViewer
+                                                            type="audio"
+                                                            src={mediaUrl}
+                                                            alt={description}
+                                                            description={
+                                                                description
+                                                            }
+                                                        />
                                                     );
                                                 }
 
@@ -390,7 +447,7 @@ const ChatContainer = () => {
                                                         return true; // Show unsupported message on parse error
                                                     }
                                                 })() && (
-                                                    <div className="flex items-center gap-2 text-sm italic text-gray-400">
+                                                    <div className="flex items-center gap-2 text-sm italic text-gray-400 px-4 py-2">
                                                         <span>
                                                             Unsupported message
                                                             type
@@ -408,6 +465,20 @@ const ChatContainer = () => {
             )}
 
             <MessageInput />
+
+            <ImageModal
+                isOpen={imageModal.isOpen}
+                imageUrl={imageModal.imageUrl}
+                description={imageModal.description}
+                onClose={closeImageModal}
+            />
+
+            <VideoModal
+                isOpen={videoModal.isOpen}
+                videoUrl={videoModal.videoUrl}
+                description={videoModal.description}
+                onClose={closeVideoModal}
+            />
         </div>
     );
 };

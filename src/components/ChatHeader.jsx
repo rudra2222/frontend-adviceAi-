@@ -56,9 +56,11 @@ const ChatHeader = () => {
                     {/* Conversation info */}
                     <div>
                         <h3 className="font-medium">
-                            {selectedConversation.name}
+                            {selectedConversation.name
+                                ? selectedConversation.name
+                                : "Unknown"}
                         </h3>
-                        <p className="text-sm text-base-content/70">
+                        <p className="text-sm text-base-content/70 text-gray-500">
                             {selectedConversation.phone}
                             {/* {onlineConversations.includes(selectedConversation.id) ? "Online" : "Offline"} */}
                         </p>
