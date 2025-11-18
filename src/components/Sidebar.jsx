@@ -216,7 +216,7 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="h-full pr-3 mr-2 w-20 lg:w-96 border-r border-base-300 flex flex-col transition-all duration-200">
+        <aside className="h-full pr-3 mr-2 w-20 lg:w-96 border-r border-zinc-700 flex flex-col transition-all duration-200">
             {/* Search Box */}
             <ChatSearchBox
                 value={searchQuery}

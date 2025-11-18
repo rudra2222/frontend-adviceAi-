@@ -164,10 +164,38 @@
 /* WhatsApp-style doodle pattern for chat background */
 @layer utilities {
     .chat-doodle-bg {
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' width='1000' height='1000'%3E%3Cdefs%3E%3Cstyle%3E.doodle-line %7B stroke: rgba(255,255,255,0.03); stroke-width: 1; fill: none; %7D%3C/style%3E%3C/defs%3E%3C!-- Scattered decorative lines and shapes --%3E%3Cpath class='doodle-line' d='M50,100 Q200,150 300,100'/%3E%3Cpath class='doodle-line' d='M800,200 Q900,250 950,200'/%3E%3Cpath class='doodle-line' d='M100,400 L300,450'/%3E%3Ccircle class='doodle-line' cx='150' cy='700' r='40'/%3E%3Cpath class='doodle-line' d='M600,300 Q700,350 750,300'/%3E%3Ccircle class='doodle-line' cx='850' cy='500' r='30'/%3E%3Cpath class='doodle-line' d='M200,550 L250,650'/%3E%3Cpath class='doodle-line' d='M500,600 Q600,650 700,600'/%3E%3Cpath class='doodle-line' d='M50,800 Q100,850 150,800'/%3E%3Ccircle class='doodle-line' cx='700' cy='900' r='50'/%3E%3Cpath class='doodle-line' d='M900,700 Q950,750 1000,700'/%3E%3Cpath class='doodle-line' d='M300,200 Q350,250 300,300'/%3E%3Cpath class='doodle-line' d='M600,800 Q650,850 700,800'/%3E%3C/svg%3E"),
-            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' width='1000' height='1000'%3E%3Cdefs%3E%3Cstyle%3E.doodle-dot %7B fill: rgba(255,255,255,0.02); %7D%3C/style%3E%3C/defs%3E%3C!-- Random dots --%3E%3Ccircle class='doodle-dot' cx='100' cy='200' r='3'/%3E%3Ccircle class='doodle-dot' cx='400' cy='350' r='2'/%3E%3Ccircle class='doodle-dot' cx='700' cy='150' r='3'/%3E%3Ccircle class='doodle-dot' cx='200' cy='600' r='2'/%3E%3Ccircle class='doodle-dot' cx='800' cy='400' r='3'/%3E%3Ccircle class='doodle-dot' cx='500' cy='800' r='2'/%3E%3Ccircle class='doodle-dot' cx='300' cy='900' r='3'/%3E%3Ccircle class='doodle-dot' cx='900' cy='600' r='2'/%3E%3C/svg%3E");
-        background-size: 1000px 1000px, 1000px 1000px;
+        /* decresese the visibility of the patterns */
+        background-image: linear-gradient(
+                rgba(0, 0, 0, 0.75),
+                rgba(0, 0, 0, 0.75)
+            ),
+            url(../public/whatsapp-chat-bg.png);
         background-attachment: fixed;
         background-repeat: repeat;
+    }
+}
+
+/* Override daisyUI/Tailwind skeleton shimmer to use a white highlight */
+@layer components {
+    .skeleton {
+        position: relative;
+        overflow: hidden;
+        background-image: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.02) 0%,
+            rgba(255, 255, 255, 0.6) 50%,
+            rgba(255, 255, 255, 0.02) 100%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.2s linear infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
     }
 }

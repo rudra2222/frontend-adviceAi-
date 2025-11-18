@@ -20,7 +20,7 @@ const ChatHeader = () => {
     }, [selectedConversation?.human_intervention_required]);
 
     return (
-        <div className="p-2.5 border-b border-base-300">
+        <div className="p-2.5 border-b border-zinc-700 bg-zinc-900">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     {/* Avatar */}
@@ -60,22 +60,23 @@ const ChatHeader = () => {
                                 ? selectedConversation.name
                                 : "Unknown"}
                         </h3>
-                        <p className="text-sm text-base-content/70 text-gray-500">
+                        <p className="text-sm text-base-content/70 text-gray-300">
                             {selectedConversation.phone}
                             {/* {onlineConversations.includes(selectedConversation.id) ? "Online" : "Offline"} */}
                         </p>
                     </div>
                 </div>
+                <div className="flex gap-4">
+                    <TakeoverToggleButton />
 
-                <TakeoverToggleButton />
-
-                {/* Close button */}
-                <button
-                    className="btn btn-sm btn-circle gap-2 bg-transparent border-transparent text-gray-200 hover:bg-red-600"
-                    onClick={() => setSelectedConversation(null)}
-                >
-                    <X />
-                </button>
+                    {/* Close button */}
+                    <button
+                        className="btn btn-sm btn-circle gap-2 bg-transparent border-transparent text-gray-200 hover:bg-red-600"
+                        onClick={() => setSelectedConversation(null)}
+                    >
+                        <X />
+                    </button>
+                </div>
             </div>
         </div>
     );

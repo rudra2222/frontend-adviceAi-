@@ -41,11 +41,15 @@ export const parseTextWithLinks = (text) => {
 };
 
 // Component to render text with clickable links
-export const LinkifiedText = ({ text }) => {
+export const LinkifiedText = ({ text, has_attachment }) => {
     const parts = parseTextWithLinks(text);
 
     return (
-        <span className="whitespace-pre-wrap break-words">
+        <span
+            className={`whitespace-pre-wrap break-words ${
+                has_attachment ? "mt-2" : ""
+            }`}
+        >
             {parts?.map((part, index) => {
                 if (part?.type === "link") {
                     return (

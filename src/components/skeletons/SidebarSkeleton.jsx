@@ -6,11 +6,11 @@ const SidebarSkeleton = () => {
 
   return (
     <aside
-      className="h-full w-20 lg:w-72 border-r border-base-300 
+      className="h-full w-20 lg:w-72 border-r border-zinc-900 
     flex flex-col transition-all duration-200"
     >
       {/* Header */}
-      <div className="border-b border-base-300 w-full p-5">
+      <div className="border-b border-zinc-900 w-full p-5">
         <div className="flex items-center gap-2">
           <Search className="h-5 w-5 text-muted-foreground" />
           <div className="hidden lg:flex items-center gap-2 flex-1">

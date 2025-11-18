@@ -1,7 +1,7 @@
 import { Play, Pause, Image, Film } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-const MediaViewer = ({ type, src, alt, onOpen, description }) => {
+const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -54,7 +54,11 @@ const MediaViewer = ({ type, src, alt, onOpen, description }) => {
     if (type === "image") {
         return (
             <div
-                className="relative sm:max-w-[200px] rounded-md overflow-hidden group"
+                className={`relative sm:max-w-[200px] rounded-md overflow-hidden group ${
+                    direction === "outbound"
+                        ? "bg-[#144D37] text-white"
+                        : "bg-zinc-800 text-white"
+                }`}
                 onMouseEnter={() => setShowOverlay(true)}
                 onMouseLeave={() => setShowOverlay(false)}
             >
@@ -76,7 +80,11 @@ const MediaViewer = ({ type, src, alt, onOpen, description }) => {
     if (type === "video") {
         return (
             <div
-                className="relative sm:max-w-[200px] rounded-md overflow-hidden group"
+                className={`relative sm:max-w-[200px] rounded-md overflow-hidden group ${
+                    direction === "outbound"
+                        ? "bg-[#144D37] text-white"
+                        : "bg-zinc-800 text-white"
+                }`}
                 onMouseEnter={() => setShowOverlay(true)}
                 onMouseLeave={() => setShowOverlay(false)}
             >
@@ -118,7 +126,13 @@ const MediaViewer = ({ type, src, alt, onOpen, description }) => {
 
     if (type === "audio") {
         return (
-            <div className="bg-gradient-to-r from-zinc-800 to-zinc-700 dark:from-zinc-700 dark:to-zinc-600 rounded-xl w-full sm:max-w-2xl p-2 shadow-xl backdrop-blur-sm border border-zinc-700/50 dark:border-zinc-600/50 flex items-center gap-3">
+            <div
+                className={`bg-gradient-to-r from-zinc-800 to-zinc-700 dark:from-zinc-700 dark:to-zinc-600 rounded-xl w-full sm:max-w-2xl p-2 shadow-xl backdrop-blur-sm border border-zinc-700/50 dark:border-zinc-600/50 flex items-center gap-3 ${
+                    direction === "outbound"
+                        ? "bg-[#144D37] text-white"
+                        : "bg-zinc-800 text-white"
+                }`}
+            >
                 {/* Play/Pause Button */}
                 <button
                     onClick={handleAudioPlayPause}

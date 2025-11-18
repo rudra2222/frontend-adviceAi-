@@ -81,7 +81,7 @@ const ProfilePage = () => {
                                 <User className="w-4 h-4" />
                                 Full Name
                             </div>
-                            <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                            <p className="px-4 py-2.5 bg-zinc-900 rounded-lg border">
                                 {authUser?.username}
                             </p>
                         </div>
@@ -91,13 +91,13 @@ const ProfilePage = () => {
                                 <Phone className="w-4 h-4" />
                                 Phone
                             </div>
-                            <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                            <p className="px-4 py-2.5 bg-zinc-900 rounded-lg border">
                                 {authUser?.phone}
                             </p>
                         </div>
                     </div>
 
-                    <div className="mt-6 bg-base-300 rounded-xl p-6">
+                    <div className="mt-6 bg-zinc-900 rounded-xl p-6">
                         <h2 className="text-lg font-medium  mb-4">
                             Account Information
                         </h2>

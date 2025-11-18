@@ -217,7 +217,7 @@ const MessageInput = () => {
 
         // For other file types, just show the file icon
         return (
-            <div className="w-20 h-20 flex items-center justify-center rounded-lg border border-zinc-700 bg-base-200">
+            <div className="w-20 h-20 flex items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900">
                 <File size={18} />
             </div>
         );
@@ -343,7 +343,7 @@ const MessageInput = () => {
             )} */}
 
             {files.length > 0 && (
-                <div className="mb-3 flex flex-wrap items-center gap-3 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent pt-2 px-1">
+                <div className="mb-3 bg-zinc-900 flex flex-wrap items-center gap-3 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent pt-2 px-1">
                     {files.map((fileData) => (
                         <div key={fileData.id} className="relative pt-1">
                             {renderPreview(fileData)}
@@ -439,7 +439,7 @@ const MessageInput = () => {
                 </div>
                 <button
                     type="submit"
-                    className="btn btn-md btn-circle bg-zinc-900 text-zinc-400 disabled:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed pt-1 pr-1"
+                    className="btn btn-md btn-circle bg-zinc-900 text-zinc-400 disabled:text-gray-500 disabled:bg-zinc-900 disabled:cursor-not-allowed pt-1 pr-1"
                     title={
                         windowExpired
                             ? "Message window closed"

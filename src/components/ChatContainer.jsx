@@ -226,7 +226,7 @@ const ChatContainer = () => {
                                             } ${
                                                 message.message_text?.length > 0
                                                     ? "px-4 py-2"
-                                                    : "p-0"
+                                                    : "p-0 bg-transparent"
                                             }`}
                                         >
                                             {/* Reply Preview Box */}
@@ -349,6 +349,9 @@ const ChatContainer = () => {
                                                 ) {
                                                     return (
                                                         <MediaViewer
+                                                            direction={
+                                                                message.direction
+                                                            }
                                                             type="image"
                                                             src={mediaUrl}
                                                             alt={description}
@@ -373,6 +376,9 @@ const ChatContainer = () => {
                                                 ) {
                                                     return (
                                                         <MediaViewer
+                                                            direction={
+                                                                message.direction
+                                                            }
                                                             type="video"
                                                             src={mediaUrl}
                                                             alt={description}
@@ -397,6 +403,9 @@ const ChatContainer = () => {
                                                 ) {
                                                     return (
                                                         <MediaViewer
+                                                            direction={
+                                                                message.direction
+                                                            }
                                                             type="audio"
                                                             src={mediaUrl}
                                                             alt={description}
@@ -409,12 +418,19 @@ const ChatContainer = () => {
 
                                                 return null;
                                             })()}
-                                            {message.has_text && (
+                                            {message.message_text?.length >
+                                                0 && (
                                                 <LinkifiedText
                                                     text={message.message_text}
+                                                    has_attachment={
+                                                        message.media_info
+                                                            ? true
+                                                            : false
+                                                    }
                                                 />
                                             )}
-                                            {!message.has_text &&
+                                            {!message.message_text?.length >
+                                                0 &&
                                                 (() => {
                                                     // Check if media_info exists and has valid content
                                                     try {
