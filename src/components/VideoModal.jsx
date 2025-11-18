@@ -13,7 +13,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useMediaCache } from "../hooks/useMediaCache";
 
-const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
+const VideoModal = ({ isOpen, videoUrl, onClose, caption }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -216,9 +216,6 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
                         >
                             <X className="w-6 h-6 text-white" />
                         </button>
-                        <h2 className="text-white font-semibold text-sm flex-1 text-center truncate px-4">
-                            Video
-                        </h2>
                         <div className="flex gap-2">
                             {!isCached && (
                                 <button
@@ -246,7 +243,7 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
                                     if (navigator.share) {
                                         navigator.share({
                                             title: "Video",
-                                            text: description,
+                                            text: caption,
                                             url: videoUrl,
                                         });
                                     }
@@ -315,7 +312,7 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
                         onClick={handleSeek}
                     >
                         <div
-                            className="h-full bg-red-500"
+                            className="h-full bg-white"
                             style={{
                                 width: `${(currentTime / duration) * 100}%`,
                             }}
@@ -347,7 +344,7 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={toggleMute}
-                                        className="bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
+                                        className="bg-black/50 hover:bg-black/70 rounded-full p-2"
                                         aria-label="Mute"
                                     >
                                         {isMuted ? (
@@ -363,9 +360,9 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
                                         step="0.1"
                                         value={isMuted ? 0 : volume}
                                         onChange={handleVolumeChange}
-                                        className="w-24 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer"
+                                        className="w-24 h-1 bg-white rounded-lg appearance-none cursor-pointer"
                                         style={{
-                                            background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${
+                                            background: `linear-gradient(to right, #ffffff 0%, #ffffff ${
                                                 (isMuted ? 0 : volume) * 100
                                             }%, rgba(255,255,255,0.2) ${
                                                 (isMuted ? 0 : volume) * 100
@@ -388,10 +385,10 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
                             </button>
                         </div>
 
-                        {/* Description */}
-                        {description && (
+                        {/* Caption */}
+                        {caption && (
                             <p className="text-white text-sm break-words">
-                                {description}
+                                {caption}
                             </p>
                         )}
                     </div>

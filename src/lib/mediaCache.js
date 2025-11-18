@@ -191,7 +191,7 @@ export const downloadAndCacheMedia = async (
     mediaId,
     url,
     mimeType = "application/octet-stream",
-    ttl = CACHE_TTL.LONG
+    ttl = CACHE_TTL.VERY_LONG
 ) => {
     try {
         // Check if already cached

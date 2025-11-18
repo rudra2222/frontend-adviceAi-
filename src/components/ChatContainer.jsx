@@ -29,12 +29,12 @@ const ChatContainer = () => {
     const [imageModal, setImageModal] = useState({
         isOpen: false,
         imageUrl: "",
-        description: "",
+        caption: "",
     });
     const [videoModal, setVideoModal] = useState({
         isOpen: false,
         videoUrl: "",
-        description: "",
+        caption: "",
     });
 
     useEffect(() => {
@@ -59,11 +59,11 @@ const ChatContainer = () => {
         }
     };
 
-    const openImageModal = (imageUrl, description = "") => {
+    const openImageModal = (imageUrl, caption = "") => {
         setImageModal({
             isOpen: true,
             imageUrl,
-            description,
+            caption,
         });
     };
 
@@ -71,15 +71,15 @@ const ChatContainer = () => {
         setImageModal({
             isOpen: false,
             imageUrl: "",
-            description: "",
+            caption: "",
         });
     };
 
-    const openVideoModal = (videoUrl, description = "") => {
+    const openVideoModal = (videoUrl, caption = "") => {
         setVideoModal({
             isOpen: true,
             videoUrl,
-            description,
+            caption,
         });
     };
 
@@ -87,7 +87,7 @@ const ChatContainer = () => {
         setVideoModal({
             isOpen: false,
             videoUrl: "",
-            description: "",
+            caption: "",
         });
     };
 
@@ -332,9 +332,8 @@ const ChatContainer = () => {
                                                 const mimeType =
                                                     mediaInfo?.mimeType ||
                                                     mediaInfo?.mime_type;
-                                                const description =
-                                                    mediaInfo?.description ||
-                                                    "Media";
+                                                const caption =
+                                                    message?.message_text || "";
 
                                                 if (!mediaId || !mimeType)
                                                     return null;
@@ -354,14 +353,12 @@ const ChatContainer = () => {
                                                             }
                                                             type="image"
                                                             src={mediaUrl}
-                                                            alt={description}
-                                                            description={
-                                                                description
-                                                            }
+                                                            alt={caption}
+                                                            caption={caption}
                                                             onOpen={() =>
                                                                 openImageModal(
                                                                     mediaUrl,
-                                                                    description
+                                                                    caption
                                                                 )
                                                             }
                                                         />
@@ -381,14 +378,12 @@ const ChatContainer = () => {
                                                             }
                                                             type="video"
                                                             src={mediaUrl}
-                                                            alt={description}
-                                                            description={
-                                                                description
-                                                            }
+                                                            alt={caption}
+                                                            caption={caption}
                                                             onOpen={() =>
                                                                 openVideoModal(
                                                                     mediaUrl,
-                                                                    description
+                                                                    caption
                                                                 )
                                                             }
                                                         />
@@ -408,10 +403,8 @@ const ChatContainer = () => {
                                                             }
                                                             type="audio"
                                                             src={mediaUrl}
-                                                            alt={description}
-                                                            description={
-                                                                description
-                                                            }
+                                                            alt={caption}
+                                                            caption={caption}
                                                         />
                                                     );
                                                 }
@@ -485,14 +478,14 @@ const ChatContainer = () => {
             <ImageModal
                 isOpen={imageModal.isOpen}
                 imageUrl={imageModal.imageUrl}
-                description={imageModal.description}
+                caption={imageModal.caption}
                 onClose={closeImageModal}
             />
 
             <VideoModal
                 isOpen={videoModal.isOpen}
                 videoUrl={videoModal.videoUrl}
-                description={videoModal.description}
+                caption={videoModal.caption}
                 onClose={closeVideoModal}
             />
         </div>

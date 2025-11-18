@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
  * @param {number} ttl - Cache TTL
  * @returns {Object} Cache state and methods
  */
-export const useMediaCache = (mediaUrl, mimeType, ttl = CACHE_TTL.LONG) => {
+export const useMediaCache = (mediaUrl, mimeType, ttl = CACHE_TTL.VERY_LONG) => {
     const [cachedUrl, setCachedUrl] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isCached, setIsCached] = useState(false);

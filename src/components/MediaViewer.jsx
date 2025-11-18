@@ -2,12 +2,63 @@ import { Play, Pause, Image, Film, Download, HardDrive } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useMediaCache } from "../hooks/useMediaCache";
 
-const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
+const MediaViewer = ({ type, src, alt, onOpen, caption, direction }) => {
     const [duration, setDuration] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showOverlay, setShowOverlay] = useState(false);
     const mediaRef = useRef(null);
+
+    // WhatsApp-like SVG spinner
+    const Spinner = ({ size = "md", ariaLabel = "Loading" }) => {
+        const dim = size === "lg" ? 32 : 16;
+        const stroke = size === "lg" ? 4 : 3;
+        // WhatsApp green
+        const color = "#25D366";
+        return (
+            <div
+                role="status"
+                aria-label={ariaLabel}
+                className="flex items-center justify-center"
+            >
+                <svg
+                    width={dim}
+                    height={dim}
+                    viewBox="0 0 50 50"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden={ariaLabel ? "false" : "true"}
+                >
+                    <circle
+                        cx="25"
+                        cy="25"
+                        r="20"
+                        stroke="rgba(255,255,255,0.08)"
+                        strokeWidth={stroke}
+                        fill="none"
+                    />
+                    <path
+                        d="M25 5 A20 20 0 0 1 45 25"
+                        stroke={color}
+                        strokeWidth={stroke}
+                        strokeLinecap="round"
+                        fill="none"
+                        strokeDasharray="80 120"
+                    >
+                        <animateTransform
+                            attributeName="transform"
+                            type="rotate"
+                            from="0 25 25"
+                            to="360 25 25"
+                            dur="1s"
+                            repeatCount="indefinite"
+                        />
+                    </path>
+                </svg>
+                <span className="sr-only">{ariaLabel}</span>
+            </div>
+        );
+    };
 
     // Media caching hook
     const { isCached, isLoading, cacheMedia, cachedUrl } = useMediaCache(
@@ -87,10 +138,10 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                 {isLoading && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-md backdrop-blur-sm">
                         <div className="flex flex-col items-center gap-2">
-                            <div className="w-8 h-8 border-3 border-white border-t-blue-500 rounded-full animate-spin" />
-                            <span className="text-white text-xs font-medium">
-                                Downloading...
-                            </span>
+                            <Spinner
+                                size="lg"
+                                ariaLabel={`Downloading ${type}`}
+                            />
                         </div>
                     </div>
                 )}
@@ -104,20 +155,20 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                             cacheMedia();
                         }}
                     >
-                        <button className="bg-blue-500 hover:bg-blue-600 rounded-full p-3 transition-all shadow-lg">
-                            <Download className="w-5 h-5 text-white" />
+                        <button className="bg-white/90 hover:bg-white rounded-full p-3 transition-all shadow-lg">
+                            <Download className="w-5 h-5 text-black" />
                         </button>
                     </div>
                 )}
 
                 {/* Downloaded Indicator */}
-                {isCached && (
+                {/* {isCached && (
                     <div className="absolute bottom-1 left-1 bg-green-500/80 backdrop-blur-sm rounded px-2 py-1">
                         <span className="text-white text-xs font-medium">
                             Downloaded
                         </span>
                     </div>
-                )}
+                )} */}
 
                 {/* Image Badge */}
                 <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm rounded p-1">
@@ -153,10 +204,10 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                 {isLoading && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-md backdrop-blur-sm">
                         <div className="flex flex-col items-center gap-2">
-                            <div className="w-8 h-8 border-3 border-white border-t-blue-500 rounded-full animate-spin" />
-                            <span className="text-white text-xs font-medium">
-                                Downloading...
-                            </span>
+                            <Spinner
+                                size="lg"
+                                ariaLabel={`Downloading ${type}`}
+                            />
                         </div>
                     </div>
                 )}
@@ -192,13 +243,13 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                 )}
 
                 {/* Downloaded Indicator */}
-                {isCached && (
+                {/* {isCached && (
                     <div className="absolute bottom-1 left-1 bg-green-500/80 backdrop-blur-sm rounded px-2 py-1">
                         <span className="text-white text-xs font-medium">
                             Downloaded
                         </span>
                     </div>
-                )}
+                )} */}
 
                 {/* Video Icon Badge */}
                 <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm rounded p-1">
@@ -239,7 +290,7 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
 
         return (
             <div
-                className={`bg-gradient-to-r from-zinc-800 to-zinc-700 dark:from-zinc-700 dark:to-zinc-600 rounded-xl w-full sm:max-w-2xl p-2 shadow-xl backdrop-blur-sm border border-zinc-700/50 dark:border-zinc-600/50 flex items-center gap-3 ${
+                className={`min-h-14 bg-gradient-to-r from-zinc-800 to-zinc-700 dark:from-zinc-700 dark:to-zinc-600 rounded-xl w-full sm:max-w-2xl p-2 shadow-xl backdrop-blur-sm border border-zinc-700/50 dark:border-zinc-600/50 flex items-center gap-3 ${
                     direction === "outbound"
                         ? "bg-[#144D37] text-white"
                         : "bg-zinc-800 text-white"
@@ -249,7 +300,7 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                 {isCached && (
                     <button
                         onClick={handleAudioPlayPause}
-                        className="flex-shrink-0 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 rounded-full p-2 transition-all hover:shadow-lg hover:scale-110 active:scale-95"
+                        className="flex-shrink-0 bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500 rounded-full p-2 transition-all hover:shadow-lg hover:scale-110 active:scale-95 mr-2"
                         aria-label="Play/Pause audio"
                     >
                         {isPlaying ? (
@@ -261,7 +312,7 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                 )}
 
                 {/* Progress and Duration */}
-                <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                <div className="flex-1 min-w-40 flex flex-col gap-0.5">
                     <div
                         className="h-1 bg-zinc-600 dark:bg-zinc-500 hover:bg-zinc-500 dark:hover:bg-zinc-400 rounded-full cursor-pointer transition-all group"
                         onClick={handleAudioSeek}
@@ -278,7 +329,7 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                         />
                     </div>
                     <div className="flex justify-between items-center px-1">
-                        <span className="text-zinc-300 dark:text-zinc-200 text-xs font-semibold">
+                        <span className="text-zinc-300 dark:text-zinc-200 text-xs font-semibold mr-2">
                             {formatDuration(currentTime)}
                         </span>
                         <span className="text-zinc-400 dark:text-zinc-300 text-xs font-medium">
@@ -288,13 +339,13 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                 </div>
 
                 {/* Cache Status Indicator */}
-                {isCached && (
+                {/* {isCached && (
                     <div className="flex-shrink-0 bg-green-500/80 backdrop-blur-sm rounded px-2 py-1">
                         <span className="text-white text-xs font-medium">
                             Downloaded
                         </span>
                     </div>
-                )}
+                )} */}
 
                 {/* Download to Cache Button */}
                 {!isCached && !isLoading && (
@@ -304,33 +355,32 @@ const MediaViewer = ({ type, src, alt, onOpen, description, direction }) => {
                             cacheMedia();
                         }}
                         disabled={isLoading}
-                        className="flex-shrink-0 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-full p-2 transition-colors"
+                        className="flex-shrink-0 bg-gray-600 hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-full p-2 transition-colors"
                         aria-label="Download audio for offline playing"
                         title="Download audio for offline playing"
                     >
-                        <HardDrive className="w-4 h-4 text-white" />
+                        <Download className="w-4 h-4 text-white" />
                     </button>
                 )}
 
                 {/* Loading Spinner */}
                 {isLoading && (
-                    <div className="flex-shrink-0 flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-blue-500 rounded-full animate-spin" />
-                        <span className="text-white text-xs font-medium">
-                            Downloading...
-                        </span>
+                    <div className="flex-shrink-0 flex items-center gap-2 mr-1">
+                        <Spinner size="md" ariaLabel={`Downloading ${type}`} />
                     </div>
                 )}
 
-                {/* Save to Device Button */}
-                <button
-                    onClick={handleAudioDownload}
-                    className="flex-shrink-0 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
-                    aria-label="Save audio to device"
-                    title="Save audio to your device"
-                >
-                    <Download className="w-4 h-4 text-white" />
-                </button>
+                {/* Save to Device Button - only visible after cached */}
+                {isCached && (
+                    <button
+                        onClick={handleAudioDownload}
+                        className="flex-shrink-0 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
+                        aria-label="Save audio to device"
+                        title="Save audio to your device"
+                    >
+                        <HardDrive className="w-4 h-4 text-white" />
+                    </button>
+                )}
 
                 {/* Hidden Audio Element */}
                 <audio

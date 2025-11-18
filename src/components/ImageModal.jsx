@@ -2,7 +2,7 @@ import { X, ZoomIn, ZoomOut, Download, Share2, HardDrive } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useMediaCache } from "../hooks/useMediaCache";
 
-const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
+const ImageModal = ({ isOpen, imageUrl, onClose, caption }) => {
     const [zoom, setZoom] = useState(1);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
@@ -263,7 +263,7 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
                             <X className="w-6 h-6 text-white" />
                         </button>
                         <h2 className="text-white font-semibold text-sm flex-1 text-center truncate px-4">
-                            {description ? "Image" : ""}
+                            {caption ? "Image" : ""}
                         </h2>
                         <div className="flex gap-2">
                             {!isCached && (
@@ -292,7 +292,7 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
                                     if (navigator.share) {
                                         navigator.share({
                                             title: "Image",
-                                            text: description,
+                                            text: caption,
                                             url: imageUrl,
                                         });
                                     }
@@ -356,7 +356,7 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
                     <img
                         ref={imageRef}
                         src={cachedUrl}
-                        alt={description || "Full size image"}
+                        alt={caption || "Full size image"}
                         className={`max-w-full max-h-full object-contain select-none ${
                             !isCached ? "blur-md" : ""
                         }`}
@@ -375,14 +375,14 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
                 </div>
 
                 {/* Footer - Description */}
-                {description && (
+                {caption && (
                     <div
                         className={`absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300 ${
                             showControls ? "opacity-100" : "opacity-0"
                         }`}
                     >
                         <p className="text-white text-sm break-words">
-                            {description}
+                            {caption}
                         </p>
                     </div>
                 )}

@@ -46,7 +46,7 @@ export const useChatStore = create((set, get) => ({
             };
 
             // Cache the conversations
-            setCache(CACHE_KEYS.CONVERSATIONS, data, CACHE_TTL.LONG);
+            setCache(CACHE_KEYS.CONVERSATIONS, data, CACHE_TTL.MEDIUM);
 
             set({
                 ...data,
