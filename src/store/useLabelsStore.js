@@ -3,6 +3,13 @@ import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { LABEL_COLORS, MAX_LABELS } from "../constants";
 import { useChatStore } from "./useChatStore";
+import {
+    getCache,
+    setCache,
+    removeCache,
+    CACHE_KEYS,
+    CACHE_TTL,
+} from "../lib/cache";
 
 export const useLabelsStore = create((set, get) => ({
     // State
@@ -79,6 +86,13 @@ export const useLabelsStore = create((set, get) => ({
     getLabels: async () => {
         set({ isLabelsLoading: true });
         try {
+            // Try to get from cache first
+            const cached = getCache(CACHE_KEYS.LABELS);
+            if (cached) {
+                set({ labels: cached, isLabelsLoading: false });
+                return;
+            }
+
             const res = await axiosInstance.get("/labels");
             // Backend should return labels with BigInt converted to number/string
             const labels = res.data.labels.map((label) => ({
@@ -89,6 +103,9 @@ export const useLabelsStore = create((set, get) => ({
                     ? new Date(label.created_at)
                     : new Date(),
             }));
+
+            // Cache the labels
+            setCache(CACHE_KEYS.LABELS, labels, CACHE_TTL.LONG);
 
             set({ labels });
         } catch (error) {
@@ -150,6 +167,11 @@ export const useLabelsStore = create((set, get) => ({
 
             // Add to end of list (highest sort_order)
             set({ labels: [...currentLabels, newLabel] });
+
+            // Invalidate labels cache
+            removeCache(CACHE_KEYS.LABELS);
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             return true;
         } catch (error) {
             toast.error(
@@ -202,6 +224,11 @@ export const useLabelsStore = create((set, get) => ({
 
         try {
             await axiosInstance.put(`/labels/${labelId}`, updates);
+
+            // Invalidate labels cache
+            removeCache(CACHE_KEYS.LABELS);
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             return true;
         } catch (error) {
             // Revert optimistic update on failure
@@ -234,6 +261,11 @@ export const useLabelsStore = create((set, get) => ({
 
         try {
             await axiosInstance.delete(`/labels/${labelId}`);
+
+            // Invalidate labels cache
+            removeCache(CACHE_KEYS.LABELS);
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             return true;
         } catch (error) {
             // Revert optimistic update on failure
@@ -268,6 +300,11 @@ export const useLabelsStore = create((set, get) => ({
                     position: label.sort_order,
                 })),
             });
+
+            // Invalidate labels cache
+            removeCache(CACHE_KEYS.LABELS);
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             return true;
         } catch (error) {
             // Revert on failure
@@ -314,6 +351,11 @@ export const useLabelsStore = create((set, get) => ({
             await axiosInstance.post(`/labels/${labelId}/reorder`, {
                 newPosition,
             });
+
+            // Invalidate labels cache
+            removeCache(CACHE_KEYS.LABELS);
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             return true;
         } catch (error) {
             // Revert on failure

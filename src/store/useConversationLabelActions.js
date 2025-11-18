@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useChatStore } from "./useChatStore";
+import { removeCache, CACHE_KEYS } from "../lib/cache";
 
 export const useConversationLabelActions = () => {
     const {
@@ -96,6 +97,9 @@ export const useConversationLabelActions = () => {
                 setConversations(finalConversations);
             }
 
+            // Invalidate conversation labels cache
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             return true;
         } catch (error) {
             // Revert optimistic update
@@ -155,6 +159,9 @@ export const useConversationLabelActions = () => {
             await axiosInstance.delete(
                 `/conversation-label/${conversationId}/labels/${labelId}`
             );
+
+            // Invalidate conversation labels cache
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
 
             return true;
         } catch (error) {
@@ -240,6 +247,9 @@ export const useConversationLabelActions = () => {
                 }
             );
 
+            // Invalidate conversation labels cache
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             toast.success(
                 `Label assigned to ${conversationIds.length} conversation(s)`
             );
@@ -293,6 +303,9 @@ export const useConversationLabelActions = () => {
                     labelId,
                 }
             );
+
+            // Invalidate conversation labels cache
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
 
             toast.success(
                 `Label removed from ${conversationIds.length} conversation(s)`
@@ -352,6 +365,9 @@ export const useConversationLabelActions = () => {
             await axiosInstance.delete(
                 `/conversation-labels/conversations/${conversationId}/labels`
             );
+
+            // Invalidate conversation labels cache
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
 
             toast.success("All labels removed successfully");
             return true;

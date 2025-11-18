@@ -3,6 +3,13 @@ import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 import { useChatStore } from "./useChatStore.js";
+import {
+    getCache,
+    setCache,
+    removeCache,
+    CACHE_KEYS,
+    CACHE_TTL,
+} from "../lib/cache.js";
 
 const BASE_URL =
     import.meta.env.MODE === "development"
@@ -19,7 +26,18 @@ export const useAuthStore = create((set, get) => ({
 
     checkAuth: async () => {
         try {
+            // Try to get from cache first
+            const cached = getCache(CACHE_KEYS.AUTH_USER);
+            if (cached) {
+                set({ authUser: cached });
+                get().connectSocket();
+                return;
+            }
+
             const res = await axiosInstance.get("/auth/check");
+
+            // Cache the auth user
+            setCache(CACHE_KEYS.AUTH_USER, res.data, CACHE_TTL.LONG);
 
             set({ authUser: res.data });
             get().connectSocket();
@@ -34,6 +52,10 @@ export const useAuthStore = create((set, get) => ({
         set({ isSigningUp: true });
         try {
             const res = await axiosInstance.post("/auth/signup", data);
+
+            // Cache the auth user
+            setCache(CACHE_KEYS.AUTH_USER, res.data, CACHE_TTL.LONG);
+
             set({ authUser: res.data });
             toast.success("Account created successfully");
             get().connectSocket();
@@ -48,6 +70,10 @@ export const useAuthStore = create((set, get) => ({
         set({ isLoggingIn: true });
         try {
             const res = await axiosInstance.post("/auth/login", data);
+
+            // Cache the auth user
+            setCache(CACHE_KEYS.AUTH_USER, res.data, CACHE_TTL.LONG);
+
             set({ authUser: res.data });
             toast.success("Logged in successfully");
 
@@ -64,6 +90,13 @@ export const useAuthStore = create((set, get) => ({
             await axiosInstance.post("/auth/logout");
             set({ authUser: null });
             toast.success("Logged out successfully");
+
+            // Clear all caches on logout
+            removeCache(CACHE_KEYS.AUTH_USER);
+            removeCache(CACHE_KEYS.CONVERSATIONS);
+            removeCache(CACHE_KEYS.LABELS);
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
             get().disconnectSocket();
         } catch (error) {
             toast.error(error.response.data.message);
@@ -74,6 +107,10 @@ export const useAuthStore = create((set, get) => ({
         set({ isUpdatingProfile: true });
         try {
             const res = await axiosInstance.put("/auth/update-profile", data);
+
+            // Cache the updated auth user
+            setCache(CACHE_KEYS.AUTH_USER, res.data, CACHE_TTL.LONG);
+
             set({ authUser: res.data });
             toast.success("Profile updated successfully");
         } catch (error) {

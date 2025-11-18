@@ -1,5 +1,6 @@
-import { X, ZoomIn, ZoomOut, Download, Share2 } from "lucide-react";
+import { X, ZoomIn, ZoomOut, Download, Share2, HardDrive } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
+import { useMediaCache } from "../hooks/useMediaCache";
 
 const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
     const [zoom, setZoom] = useState(1);
@@ -10,6 +11,12 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
     const imageRef = useRef(null);
     const containerRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
+
+    // Media caching hook
+    const { isCached, isLoading, cacheMedia, cachedUrl } = useMediaCache(
+        imageUrl,
+        "image/jpeg"
+    );
 
     const MIN_ZOOM = 1;
     const MAX_ZOOM = 5;
@@ -187,9 +194,20 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
 
     const handleDownload = async () => {
         try {
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+            // Use cached URL if available, otherwise fetch from source
+            let blobToDownload = null;
+
+            if (isCached && cachedUrl && cachedUrl.startsWith("blob:")) {
+                // Convert blob URL back to blob
+                const response = await fetch(cachedUrl);
+                blobToDownload = await response.blob();
+            } else {
+                // Fallback to fetching from original URL
+                const response = await fetch(imageUrl);
+                blobToDownload = await response.blob();
+            }
+
+            const url = window.URL.createObjectURL(blobToDownload);
             const a = document.createElement("a");
             a.href = url;
             a.download = `image-${Date.now()}.jpg`;
@@ -248,6 +266,20 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
                             {description ? "Image" : ""}
                         </h2>
                         <div className="flex gap-2">
+                            {!isCached && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        cacheMedia();
+                                    }}
+                                    disabled={isLoading}
+                                    className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-full p-2 transition-colors"
+                                    aria-label="Download image"
+                                    title="Download image for offline viewing"
+                                >
+                                    <HardDrive className="w-5 h-5 text-white" />
+                                </button>
+                            )}
                             <button
                                 onClick={handleDownload}
                                 className="bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
@@ -309,11 +341,25 @@ const ImageModal = ({ isOpen, imageUrl, onClose, description }) => {
 
                 {/* Image Container */}
                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                    {/* Loading Overlay */}
+                    {isLoading && (
+                        <div className="absolute inset-0 z-30 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-12 h-12 border-4 border-white border-t-blue-500 rounded-full animate-spin" />
+                                <span className="text-white text-sm font-medium">
+                                    Downloading...
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
                     <img
                         ref={imageRef}
-                        src={imageUrl}
+                        src={cachedUrl}
                         alt={description || "Full size image"}
-                        className="max-w-full max-h-full object-contain select-none"
+                        className={`max-w-full max-h-full object-contain select-none ${
+                            !isCached ? "blur-md" : ""
+                        }`}
                         style={{
                             transform: `scale(${zoom}) translate(${
                                 position.x / zoom

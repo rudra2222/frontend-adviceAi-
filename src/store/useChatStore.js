@@ -2,6 +2,13 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
+import {
+    getCache,
+    setCache,
+    removeCache,
+    CACHE_KEYS,
+    CACHE_TTL,
+} from "../lib/cache";
 
 export const useChatStore = create((set, get) => ({
     messages: [],
@@ -17,13 +24,32 @@ export const useChatStore = create((set, get) => ({
     getInitialConversations: async () => {
         set({ isConversationsLoading: true });
         try {
+            // Try to get from cache first
+            const cached = getCache(CACHE_KEYS.CONVERSATIONS);
+            if (cached) {
+                set({
+                    criticalConversations: cached.criticalConversations,
+                    conversations: cached.conversations,
+                    hasInitiallyLoaded: true,
+                });
+                set({ isConversationsLoading: false });
+                return;
+            }
+
             const res = await axiosInstance.get("/conversations/");
-            set({
+            const data = {
                 criticalConversations: [...res.data.criticalConversations],
                 conversations: [
                     ...res.data.criticalConversations,
                     ...res.data.nonCriticalConversations,
                 ],
+            };
+
+            // Cache the conversations
+            setCache(CACHE_KEYS.CONVERSATIONS, data, CACHE_TTL.LONG);
+
+            set({
+                ...data,
                 hasInitiallyLoaded: true,
             });
         } catch (error) {
@@ -122,6 +148,10 @@ export const useChatStore = create((set, get) => ({
 
             await axiosInstance.post("/messages/send-message", body);
 
+            // Invalidate message cache for this conversation
+            const cacheKey = CACHE_KEYS.MESSAGES(get().selectedConversation.id);
+            removeCache(cacheKey);
+
             uploadRes = null;
         } catch (error) {
             toast.error(
@@ -134,11 +164,24 @@ export const useChatStore = create((set, get) => ({
     getMessages: async (conversationId) => {
         set({ isMessagesLoading: true });
         try {
+            // Try to get from cache first
+            const cacheKey = CACHE_KEYS.MESSAGES(conversationId);
+            const cached = getCache(cacheKey);
+            if (cached) {
+                set({ messages: cached });
+                set({ isMessagesLoading: false });
+                return;
+            }
+
             const res = await axiosInstance.get(`/messages/${conversationId}`);
             // Sort messages by timestamp
             const sortedMessages = res.data.messages.sort(
                 (a, b) => new Date(a.provider_ts) - new Date(b.provider_ts)
             );
+
+            // Cache the messages
+            setCache(cacheKey, sortedMessages, CACHE_TTL.MEDIUM);
+
             set({ messages: sortedMessages });
         } catch (error) {
             toast.error(error.response.data.message);
@@ -168,6 +211,12 @@ export const useChatStore = create((set, get) => ({
                 set({
                     messages: [...get().messages, newMessage],
                 });
+
+                // Invalidate message cache when new message arrives
+                const cacheKey = CACHE_KEYS.MESSAGES(
+                    newMessage.conversation_id
+                );
+                removeCache(cacheKey);
             }
 
             // Move the conversation to the top and update last_message
@@ -189,6 +238,9 @@ export const useChatStore = create((set, get) => ({
             );
 
             set({ conversations: updatedConversations });
+
+            // Invalidate conversations cache
+            removeCache(CACHE_KEYS.CONVERSATIONS);
         });
     },
 
@@ -297,6 +349,9 @@ export const useChatStore = create((set, get) => ({
             // Add to critical conversations when takeover is activated
             get().addToCriticalConversations(get().selectedConversation.id);
             // ==================== CRITICAL LABEL LOGIC END ====================
+
+            // Invalidate cache
+            removeCache(CACHE_KEYS.CONVERSATIONS);
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {
@@ -323,6 +378,9 @@ export const useChatStore = create((set, get) => ({
                 get().selectedConversation.id
             );
             // ==================== CRITICAL LABEL LOGIC END ====================
+
+            // Invalidate cache
+            removeCache(CACHE_KEYS.CONVERSATIONS);
         } catch (error) {
             toast.error(error.response.data.message);
         } finally {

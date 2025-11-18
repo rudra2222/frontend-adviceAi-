@@ -11,7 +11,11 @@ const MessageSkeleton = () => {
                         idx % 2 === 0 ? "chat-start" : "chat-end"
                     }`}
                 >
-                    <div className="chat-image avatar">
+                    <div className={`chat-image avatar ${
+                        idx % 2 !== 0
+                                        ? ""
+                                        : "hidden"
+                    }`}>
                         <div className="size-10 rounded-full">
                             <div
                                 className={`skeleton w-full h-full rounded-full ${

@@ -8,8 +8,10 @@ import {
     Share2,
     Volume2,
     VolumeX,
+    HardDrive,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useMediaCache } from "../hooks/useMediaCache";
 
 const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -22,6 +24,12 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
+
+    // Media caching hook
+    const { isCached, isLoading, cacheMedia, cachedUrl } = useMediaCache(
+        videoUrl,
+        "video/mp4"
+    );
 
     useEffect(() => {
         if (isOpen) {
@@ -143,9 +151,20 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
 
     const handleDownload = async () => {
         try {
-            const response = await fetch(videoUrl);
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
+            // Use cached URL if available, otherwise fetch from source
+            let blobToDownload = null;
+
+            if (isCached && cachedUrl && cachedUrl.startsWith("blob:")) {
+                // Convert blob URL back to blob
+                const response = await fetch(cachedUrl);
+                blobToDownload = await response.blob();
+            } else {
+                // Fallback to fetching from original URL
+                const response = await fetch(videoUrl);
+                blobToDownload = await response.blob();
+            }
+
+            const url = window.URL.createObjectURL(blobToDownload);
             const a = document.createElement("a");
             a.href = url;
             a.download = `video-${Date.now()}.mp4`;
@@ -201,6 +220,20 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
                             Video
                         </h2>
                         <div className="flex gap-2">
+                            {!isCached && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        cacheMedia();
+                                    }}
+                                    disabled={isLoading}
+                                    className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-full p-2 transition-colors"
+                                    aria-label="Download video"
+                                    title="Download video for offline viewing"
+                                >
+                                    <HardDrive className="w-5 h-5 text-white" />
+                                </button>
+                            )}
                             <button
                                 onClick={handleDownload}
                                 className="bg-black/50 hover:bg-black/70 rounded-full p-2 transition-colors"
@@ -229,10 +262,24 @@ const VideoModal = ({ isOpen, videoUrl, onClose, description }) => {
 
                 {/* Video Container */}
                 <div className="relative w-full h-full flex items-center justify-center">
+                    {/* Loading Overlay */}
+                    {isLoading && (
+                        <div className="absolute inset-0 z-30 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-12 h-12 border-4 border-white border-t-blue-500 rounded-full animate-spin" />
+                                <span className="text-white text-sm font-medium">
+                                    Downloading...
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
                     <video
                         ref={videoRef}
-                        src={videoUrl}
-                        className="max-w-full max-h-full object-contain"
+                        src={cachedUrl}
+                        className={`max-w-full max-h-full object-contain ${
+                            !isCached ? "blur-md" : ""
+                        }`}
                         onTimeUpdate={handleTimeUpdate}
                         onLoadedMetadata={handleLoadedMetadata}
                         onPlay={() => setIsPlaying(true)}
