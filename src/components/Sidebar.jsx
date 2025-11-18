@@ -216,7 +216,7 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="h-full pr-3 mr-2 w-20 lg:w-96 border-r border-zinc-700 flex flex-col transition-all duration-200">
+        <aside className="h-full pr-3 mr-2 w-20 lg:w-fit border-r border-zinc-700 flex flex-col transition-all duration-200">
             {/* Search Box */}
             <ChatSearchBox
                 value={searchQuery}
@@ -304,7 +304,7 @@ const Sidebar = () => {
             </div>
 
             {/* Conversations List */}
-            <div className="overflow-y-auto w-full py-3 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+            <div className="overflow-y-auto w-fit py-3 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
                 {sortedConversations.length === 0 ? (
                     <div className="text-center text-zinc-500 py-8">
                         {searchQuery.trim()
@@ -321,7 +321,7 @@ const Sidebar = () => {
                             onContextMenu={(e) =>
                                 handleContextMenu(e, conversation)
                             }
-                            className={`w-full p-3 flex items-center gap-3 transition-colors rounded-xl
+                            className={`w-fit p-3 flex items-center gap-3 transition-colors rounded-xl
                                 ${
                                     selectedConversation?.id === conversation.id
                                         ? "bg-stone-700 shadow-lg"
@@ -363,7 +363,7 @@ const Sidebar = () => {
 
                             {/* Conversation Info */}
 
-                            <div className="w-full hidden lg:flex flex-col text-left">
+                            <div className="w-fit max-w-64 hidden lg:flex flex-col text-left">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-0.5 truncate w-1/2">
                                         <span className="font-medium truncate">
