@@ -116,7 +116,7 @@ const MediaViewer = ({ type, src, alt, onOpen, caption, direction }) => {
     if (type === "image") {
         return (
             <div
-                className={`relative sm:max-w-[200px] rounded-md overflow-hidden group ${
+                className={`relative min-w-32 min-h-32 sm:max-w-[200px] rounded-md overflow-hidden group ${
                     direction === "outbound"
                         ? "bg-[#144D37] text-white"
                         : "bg-zinc-800 text-white"
