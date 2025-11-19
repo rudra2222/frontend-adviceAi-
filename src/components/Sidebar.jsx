@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useChatStore } from "../store/useChatStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import {
@@ -18,6 +18,7 @@ import LabelAssignmentMenu from "./LabelAssignmentMenu";
 import LabelIcon from "./LabelIcon";
 import { useLabelsStore } from "../store/useLabelsStore";
 import { useConversationLabelActions } from "../store/useConversationLabelActions";
+import ConfirmModal from "./ui/ConfirmModal";
 
 /**
  * Renders appropriate icon based on media MIME type
@@ -69,8 +70,15 @@ const Sidebar = () => {
         conversation: null,
         position: { top: 0, left: 0 },
     });
-
-    // Load conversations and labels on mount
+    const [contextMenu, setContextMenu] = useState({
+        isOpen: false,
+        conversation: null,
+        position: { top: 0, left: 0 },
+    });
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [contextTargetConversation, setContextTargetConversation] =
+        useState(null);
+    const pendingDeleteIdRef = useRef(null);
     useEffect(() => {
         const loadData = async () => {
             await getInitialConversations();
@@ -79,17 +87,28 @@ const Sidebar = () => {
         loadData();
     }, [getInitialConversations, initializeLabels]);
 
-    // Handle right-click on conversation to show label assignment menu
+    // Handle right-click on conversation to show small context menu
     const handleContextMenu = (e, conversation) => {
         e.preventDefault();
-        setLabelAssignmentMenu({
+        e.stopPropagation();
+        setContextTargetConversation(conversation);
+        setContextMenu({
             isOpen: true,
             conversation,
             position: {
                 top: e.clientY,
-                left: e.clientX - 250, // Offset to show menu to the left
+                left: e.clientX,
             },
         });
+    };
+
+    const closeContextMenu = () => {
+        setContextMenu({
+            isOpen: false,
+            conversation: null,
+            position: { top: 0, left: 0 },
+        });
+        setContextTargetConversation(null);
     };
 
     // Handle assign label
@@ -304,7 +323,7 @@ const Sidebar = () => {
             </div>
 
             {/* Conversations List */}
-            <div className="overflow-y-auto w-fit py-3 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+            <div className="overflow-y-auto w-full flex flex-col items-center py-3 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
                 {sortedConversations.length === 0 ? (
                     <div className="text-center text-zinc-500 py-8">
                         {searchQuery.trim()
@@ -363,7 +382,7 @@ const Sidebar = () => {
 
                             {/* Conversation Info */}
 
-                            <div className="w-fit max-w-64 hidden lg:flex flex-col text-left">
+                            <div className="w-fit max-w-64 lg:min-w-64 hidden lg:flex flex-col text-left">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-0.5 truncate w-1/2">
                                         <span className="font-medium truncate">
@@ -526,6 +545,59 @@ const Sidebar = () => {
                 )}
             </div>
 
+            {/* Context menu for conversations (right-click) */}
+            {contextMenu.isOpen && contextMenu.conversation && (
+                <>
+                    <div
+                        className="fixed inset-0 z-40"
+                        onClick={closeContextMenu}
+                    />
+                    <div
+                        className="fixed z-50 bg-zinc-900 border border-zinc-700 rounded-md shadow-md"
+                        style={{
+                            top: contextMenu.position.top + "px",
+                            left: contextMenu.position.left + "px",
+                            minWidth: 160,
+                        }}
+                    >
+                        <button
+                            className="w-full text-left px-4 py-2 hover:bg-zinc-800"
+                            onClick={() => {
+                                // Open label assignment menu positioned near click
+                                setLabelAssignmentMenu({
+                                    isOpen: true,
+                                    conversation: contextMenu.conversation,
+                                    position: {
+                                        top: contextMenu.position.top,
+                                        left: Math.max(
+                                            contextMenu.position.left - 250,
+                                            8
+                                        ),
+                                    },
+                                });
+                                closeContextMenu();
+                            }}
+                        >
+                            Labels
+                        </button>
+                        <button
+                            className="w-full text-left px-4 py-2 text-red-400 hover:bg-zinc-800"
+                            onClick={() => {
+                                // preserve the conversation id in a ref before closing the menu
+                                const conv = contextMenu.conversation;
+                                pendingDeleteIdRef.current = conv?.id ?? null;
+                                // keep contextTargetConversation too for UI consistency
+                                setContextTargetConversation(conv);
+                                closeContextMenu();
+                                setConfirmDeleteOpen(true);
+                            }}
+                        >
+                            Delete chat
+                        </button>
+                    </div>
+                </>
+            )}
+
             {/* Label Assignment Menu */}
             <LabelAssignmentMenu
                 isOpen={labelAssignmentMenu.isOpen}
@@ -534,6 +606,37 @@ const Sidebar = () => {
                 onAssignLabel={handleAssignLabel}
                 onRemoveLabel={handleRemoveLabel}
                 position={labelAssignmentMenu.position}
+            />
+
+            {/* Confirm modal for deleting conversation from context menu */}
+            <ConfirmModal
+                open={confirmDeleteOpen}
+                title={"Delete conversation"}
+                description={
+                    "Delete this conversation? This action cannot be undone."
+                }
+                onConfirm={async () => {
+                    const id =
+                        pendingDeleteIdRef.current ??
+                        contextTargetConversation?.id;
+                    try {
+                        if (id) {
+                            await useChatStore
+                                .getState()
+                                .deleteConversation(id);
+                        }
+                    } catch (err) {
+                        // handled in store
+                    } finally {
+                        pendingDeleteIdRef.current = null;
+                        setConfirmDeleteOpen(false);
+                        setContextTargetConversation(null);
+                    }
+                }}
+                onCancel={() => {
+                    setConfirmDeleteOpen(false);
+                    setContextTargetConversation(null);
+                }}
             />
         </aside>
     );

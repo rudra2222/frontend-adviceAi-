@@ -2,11 +2,18 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import PropTypes from "prop-types";
 import { X, Check } from "lucide-react";
 
-const ConfirmModal = ({ open, title, description, onConfirm, onCancel }) => {
+const ConfirmModal = ({
+    open = false,
+    title = "Confirm action",
+    description = "Are you sure?",
+    onConfirm,
+    onCancel,
+}) => {
     const [visible, setVisible] = useState(false); // mounted state
     const [closing, setClosing] = useState(false); // whether we're playing exit
     const modalRef = useRef(null);
     const pendingActionRef = useRef(null); // 'confirm' | 'cancel' | null
+    const handledRef = useRef(false); // ensure onConfirm/onCancel called only once per close
 
     // When parent opens, mount modal and ensure we're in enter state
     useEffect(() => {
@@ -14,6 +21,7 @@ const ConfirmModal = ({ open, title, description, onConfirm, onCancel }) => {
             setVisible(true);
             setClosing(false);
             pendingActionRef.current = null;
+            handledRef.current = false;
         } else if (!open && visible) {
             // parent asked to close; begin exit
             setClosing(true);
@@ -26,14 +34,21 @@ const ConfirmModal = ({ open, title, description, onConfirm, onCancel }) => {
         (e) => {
             if (e.target !== modalRef.current) return;
             if (closing) {
+                // Always finish the close animation and unmount the modal
                 setVisible(false);
                 setClosing(false);
+
                 const action = pendingActionRef.current;
                 pendingActionRef.current = null;
-                if (action === "confirm") {
-                    onConfirm && onConfirm();
-                } else {
-                    onCancel && onCancel();
+
+                // Call the callback only if it hasn't already been invoked
+                if (!handledRef.current) {
+                    handledRef.current = true;
+                    if (action === "confirm") {
+                        onConfirm && onConfirm();
+                    } else {
+                        onCancel && onCancel();
+                    }
                 }
             }
         },
@@ -49,7 +64,17 @@ const ConfirmModal = ({ open, title, description, onConfirm, onCancel }) => {
 
     // Trigger an animated close; record which action to perform after animation
     const triggerClose = (action = "cancel") => {
-        pendingActionRef.current = action;
+        // call the callback immediately (but only once) to avoid race conditions
+        if (!handledRef.current) {
+            handledRef.current = true;
+            pendingActionRef.current = action;
+            if (action === "confirm") {
+                onConfirm && onConfirm();
+            } else {
+                onCancel && onCancel();
+            }
+        }
+
         setClosing(true);
     };
 
@@ -122,10 +147,6 @@ ConfirmModal.propTypes = {
     onCancel: PropTypes.func.isRequired,
 };
 
-ConfirmModal.defaultProps = {
-    open: false,
-    title: "Confirm action",
-    description: "Are you sure?",
-};
+// Note: default parameter values are used above instead of `defaultProps`.
 
 export default ConfirmModal;

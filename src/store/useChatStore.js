@@ -359,6 +359,157 @@ export const useChatStore = create((set, get) => ({
         }
     },
 
+    // Clear all messages in a conversation
+    clearMessages: async (conversationId) => {
+        try {
+            const res = await axiosInstance.delete(
+                `/conversations/${conversationId}/messages`
+            );
+            if (res.status !== 200 && res.status !== 204) {
+                throw new Error();
+            }
+
+            // Invalidate message cache for this conversation
+            const cacheKey = CACHE_KEYS.MESSAGES(conversationId);
+            removeCache(cacheKey);
+
+            // If this conversation is selected, clear messages in state
+            if (get().selectedConversation?.id === conversationId) {
+                set({ messages: [] });
+                // Also clear last_message on selectedConversation
+                set({
+                    selectedConversation: {
+                        ...get().selectedConversation,
+                        last_message: null,
+                    },
+                });
+            }
+
+            // Update conversations list in state: set last_message to null for the cleared conversation
+            const conversations = get().conversations || [];
+            const updatedConversations = conversations.map((c) =>
+                c.id === conversationId ? { ...c, last_message: null } : c
+            );
+
+            const criticalConversations = get().criticalConversations || [];
+            const updatedCritical = criticalConversations.map((c) =>
+                c.id === conversationId ? { ...c, last_message: null } : c
+            );
+
+            set({
+                conversations: updatedConversations,
+                criticalConversations: updatedCritical,
+            });
+
+            // Update cached conversations if present
+            try {
+                const cached = getCache(CACHE_KEYS.CONVERSATIONS);
+                if (cached) {
+                    const cachedConvs = (cached.conversations || []).map((c) =>
+                        c.id === conversationId
+                            ? { ...c, last_message: null }
+                            : c
+                    );
+                    const cachedCritical = (
+                        cached.criticalConversations || []
+                    ).map((c) =>
+                        c.id === conversationId
+                            ? { ...c, last_message: null }
+                            : c
+                    );
+
+                    setCache(
+                        CACHE_KEYS.CONVERSATIONS,
+                        {
+                            conversations: cachedConvs,
+                            criticalConversations: cachedCritical,
+                        },
+                        CACHE_TTL.MEDIUM
+                    );
+                }
+            } catch (e) {
+                // ignore cache update errors
+            }
+
+            toast.success("Chat cleared");
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Failed to clear chat"
+            );
+            throw error;
+        }
+    },
+
+    // Delete a conversation entirely
+    deleteConversation: async (conversationId) => {
+        console.log("Deleting conversation:", conversationId);
+        try {
+            const res = await axiosInstance.delete(
+                `/conversations/${conversationId}`
+            );
+            if (res.status !== 200 && res.status !== 204) {
+                throw new Error();
+            }
+
+            // Remove conversation from lists
+            const updatedConversations = (get().conversations || []).filter(
+                (c) => c.id !== conversationId
+            );
+            const updatedCritical = (get().criticalConversations || []).filter(
+                (c) => c.id !== conversationId
+            );
+
+            set({
+                conversations: updatedConversations,
+                criticalConversations: updatedCritical,
+            });
+
+            // Invalidate/update caches
+            try {
+                const cached = getCache(CACHE_KEYS.CONVERSATIONS);
+                if (cached) {
+                    const cachedConvs = (cached.conversations || []).filter(
+                        (c) => c.id !== conversationId
+                    );
+                    const cachedCritical = (
+                        cached.criticalConversations || []
+                    ).filter((c) => c.id !== conversationId);
+
+                    setCache(
+                        CACHE_KEYS.CONVERSATIONS,
+                        {
+                            conversations: cachedConvs,
+                            criticalConversations: cachedCritical,
+                        },
+                        CACHE_TTL.MEDIUM
+                    );
+                } else {
+                    removeCache(CACHE_KEYS.CONVERSATIONS);
+                }
+            } catch (e) {
+                removeCache(CACHE_KEYS.CONVERSATIONS);
+            }
+
+            // Remove messages cache for this conversation
+            removeCache(CACHE_KEYS.MESSAGES(conversationId));
+
+            // Remove conversation-labels cache to avoid stale label mappings
+            removeCache(CACHE_KEYS.CONVERSATION_LABELS);
+
+            // If deleted conversation was selected, deselect it
+            if (get().selectedConversation?.id === conversationId) {
+                set({ selectedConversation: null, messages: [] });
+            }
+
+            toast.success("Conversation deleted");
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Failed to delete conversation"
+            );
+            throw error;
+        }
+    },
+
     handback: async () => {
         try {
             set({ interventionToggleDisabled: true });
