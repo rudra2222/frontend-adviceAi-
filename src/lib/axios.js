@@ -7,3 +7,11 @@ export const axiosInstance = axios.create({
 			: `${import.meta.env.VITE_BACKEND_URL}/api/v2`,
 	withCredentials: true,
 });
+
+// Add development token for testing without login
+if (import.meta.env.VITE_MODE === "development") {
+	const devToken = localStorage.getItem("devToken");
+	if (devToken) {
+		axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${devToken}`;
+	}
+}
