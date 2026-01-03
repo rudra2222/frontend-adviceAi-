@@ -111,8 +111,11 @@ export function LeadCategoryCards() {
                   : "text-muted-foreground"
               )}
             >
-              {lead.percentage > 0 ? "+" : ""}
-              {lead.percentage.toFixed(1)}% from last month
+              {parseFloat(lead.percentage) > 0 ? "+" : ""}
+              {typeof lead.percentage === "string"
+                ? lead.percentage
+                : lead.percentage.toFixed(1)}
+              % from last month
             </p>
           </CardContent>
         </Card>

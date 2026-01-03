@@ -14,6 +14,7 @@ import {
   getLeadsStats,
   getMessagesStats,
   getCampaignsStats,
+  getRealTimeStats,
 } from "../../../lib/dashboardApi.js";
 
 
@@ -28,15 +29,20 @@ export function KpiCards() {
         setLoading(true);
         setError(null);
 
-        const [leadsRes, messagesRes, campaignsRes] = await Promise.all([
+        const [leadsRes, messagesRes, campaignsRes, realTimeRes] = await Promise.all([
           getLeadsStats(),
           getMessagesStats(),
           getCampaignsStats(),
+          getRealTimeStats(),
         ]);
 
         const leadsData = leadsRes.data || leadsRes;
+        
+
         const messagesData = messagesRes.data || messagesRes;
         const campaignsData = campaignsRes.data || campaignsRes;
+        const realTimeData = realTimeRes.data || realTimeRes;
+
 
         const totalLeads = leadsData.totalLeads?.count || 0;
         const leadsPercent = leadsData.totalLeads?.percentChange || 0;
@@ -49,8 +55,9 @@ export function KpiCards() {
         const whatsappCampaigns = campaignsData.activeCampaigns?.whatsapp || 0;
         const metaCampaigns = campaignsData.activeCampaigns?.meta || 0;
 
-        const conversionRate = leadsData.conversionRate?.percentage || 0;
-        const conversionChange = leadsData.conversionRate?.percentChange || 0;
+        const conversionRate = realTimeData.conversionRate?.percentage || 0;
+        const conversionChange = realTimeData.conversionRate?.percentChange || 0;
+
 
         const formattedKpiData = [
           {
